@@ -1,0 +1,48 @@
+{% load activity_log_tags %}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Task Activity Log</h5>
+        <!-- Toggle Button -->
+        <button id="toggleActivityLogBtn"
+                class="btn btn-sm btn-outline-primary"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#activityLogCollapse"
+                aria-expanded="false"
+                aria-controls="activityLogCollapse">
+            Expand
+        </button>
+    </div>
+
+    <div id="activityLogCollapse" class="collapse">
+        <div class="card-body scroll-log">
+            {% if task.activity_logs.all %}
+                <ul class="list-group">
+                    {% for log in task.activity_logs.all %}
+                        {% get_note_badge log.note as badge_color %}
+                        <li class="list-group-item d-flex justify-content-between align-items-start 
+                            {% if 'Created ' in log.action %}
+                                list-group-item-primary
+                            {% elif 'marked as done' in log.action %}
+                                list-group-item-info
+                            {% elif 'delivered' in log.action %}
+                                list-group-item-success
+                            {% endif %}">
+                            <div class="ms-2 me-auto">
+                                <span>{{ log.timestamp|date:"d-m-Y, H:i" }}</span>
+                                <span class="fw-bold">{{ log.user.get_full_name }}</span>
+                                <span>{{ log.action }}</span>
+                            </div>
+                            {% if log.note %}
+                            <span class="badge rounded-pill text-white {{ badge_color }}">{{ log.note }}</span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No activity logs yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>

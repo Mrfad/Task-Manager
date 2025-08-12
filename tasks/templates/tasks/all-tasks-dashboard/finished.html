@@ -1,0 +1,37 @@
+{% extends 'tasks/all-tasks-dashboard/base-dash.html' %}
+
+{% block card %}
+    {% if 'finished/' in request.path %} 
+        class="card bg-info" 
+    {% else %} 
+        class="card" 
+    {% endif %}
+{% endblock card %}
+
+{% block link %}
+    {% url 'tasks:all_tasks_query' 'finished' %}
+{% endblock link %}
+
+{% block icon %}
+    {% if 'finished/' in request.path %}
+        <i class="fas fa-tasks fa-4x text-light"></i>
+    {% else %}
+        <i class="fas fa-tasks fa-4x text-success"></i>
+    {% endif %}
+{% endblock icon %}
+
+{% block value %}
+    {% if 'finished/' in request.path %}
+        <div id="finishedall" class="text-light">{{finished_count_all}}</div>
+    {% else %}
+        <div id="finishedall" class="text-success">{{finished_count_all}}</div>
+    {% endif %}
+{% endblock value %}
+
+{% block dash-title %}
+    {% if 'finished/' in request.path %}
+        <div class="text-light">Closed Waiting Delivery</div>
+    {% else %}
+        <div class="text-success">Closed Waiting Delivery</div>
+    {% endif %}
+{% endblock dash-title %}

@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% load humanize %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block content %}
+<div class="container mt-0">
+  <div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white py-3">
+          <h4 class="mb-0 fw-bold">
+            {% if task.paid_status == 'P' %}
+              <span class="text-white text-center">Job #{{ task.id }} is already paid</span>
+            {% else %}
+              💳 Make Payment for Task #{{ task.id }} 
+            {% endif %}
+            <span class="float-end text-warning-emphasis fs-6">💱 1 USD = {{ usd_to_lbp|intcomma }}</span>
+          </h4>
+        </div>
+
+        <div class="card-body fs-5">
+
+          <!-- Task Details -->
+          <div class="mb-3">
+            <strong class="text-dark"><i class="fa-solid fa-hashtag text-success"></i> Task Number:</strong> {{ task.order_number }}
+
+            <strong class="text-dark ms-5"><i class="fa-solid fa-bars-progress text-success"></i> Task Name:</strong> {{ task.task_name }}
+          </div>
+
+          <!-- Total Price -->
+          <div class="mb-3">
+            <strong class="text-dark"><i class="fa-solid fa-money-check-dollar text-success"></i> Total Price:</strong>
+            <span class="badge bg-warning text-dark fs-5 px-3 py-2">{{ task.final_price }} {{ task.currency }}</span>
+            {% if task.currency == 'USD' %}
+              <small class="text-muted ms-2">(≈ {{ final_price_lbp|intcomma }} LBP)</small>
+            {% endif %}
+          </div>
+
+          <!-- Paid So Far -->
+          <div class="mb-3">
+            <strong class="text-dark"><i class="fa-solid fa-money-bill-wave text-success"></i> Paid So Far:</strong>
+            <span class="badge bg-success text-white fs-5 px-3 py-2">{{ paid_so_far }} {{ task.currency }}</span>
+            {% if task.currency == 'USD' %}
+              <small class="text-muted ms-2">(≈ {{ paid_so_far_lbp|intcomma }} LBP)</small>
+            {% endif %}
+          </div>
+
+          <!-- Remaining Amount / Overpaid -->
+          <div class="mb-4">
+            <strong class="text-dark"><i class="fa-solid fa-wallet text-success"></i>
+              {% if task.paid_status == 'O' %} Overpaid Amount: {% else %} Remaining Amount: {% endif %}
+            </strong>
+            <span class="badge {% if task.paid_status == 'O' %}bg-danger{% else %}bg-warning text-dark{% endif %} fs-5 px-3 py-2">
+              {{ task.remaining_amount }} {{ task.currency }}
+            </span>
+            {% if task.currency == 'USD' %}
+              <small class="text-muted ms-2">(≈ {{ remain_amount_lbp|intcomma }} LBP)</small>
+            {% endif %}
+          </div>
+
+          <!-- Overpaid Action -->
+          {% if task.paid_status == 'O' %}
+            <form method="post" class="mb-4">
+              {% csrf_token %}
+              <input type="hidden" name="fix_overpaid" value="1">
+              <button type="submit" class="btn btn-outline-danger fw-bold w-100 py-2">
+                🛠 Fix Overpaid (Adjust Final Price)
+              </button>
+            </form>
+          {% else %}
+
+          <!-- Payment Form -->
+          <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <!-- Amount -->
+            <div class="mb-3">
+              <label for="id_amount" class="form-label fw-semibold">💵 Amount to Pay</label>
+              <div class="input-group">
+                <span class="input-group-text">💰</span>
+                {{ form.amount|add_class:"form-control fs-5" }}{% if task.paid_status == 'P' %}<script>document.getElementById('id_amount').disabled = true;</script>{% endif %}
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Payment Type -->
+              <div class="col mb-3">
+                <label for="id_payment_type" class="form-label fw-semibold">📂 Payment Type</label>
+                <div class="input-group">
+                  <span class="input-group-text">📁</span>
+                  {{ form.payment_type|add_class:"form-select fs-5" }}{% if task.paid_status == 'P' %}<script>document.getElementById('id_payment_type').disabled = true;</script>{% endif %}
+                </div>
+              </div>
+              
+  
+              <!-- Payment Method -->
+              <div class="col mb-3">
+                <label for="id_payment_method" class="form-label fw-semibold">💳 Payment Method</label>
+                <div class="input-group">
+                  <span class="input-group-text">🏦</span>
+                  {{ form.payment_method|add_class:"form-select fs-5" }}{% if task.paid_status == 'P' %}<script>document.getElementById('id_payment_method').disabled = true;</script>{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-4">
+              <label for="id_notes" class="form-label fw-semibold">📝 Other Notes</label>
+              {% if task.paid_status == 'P' %}
+                <textarea name="" id="" cols="40" rows="3" class="form-control fs-5" placeholder="Enter any extra details..." disabled></textarea>
+              {% else %}
+                {% render_field form.notes class="form-control fs-5" cols="40" rows="3" placeholder="Enter any extra details..." %}
+              {% endif %}
+            </div>
+
+            <!-- Submit / Cancel -->
+            <div class="d-flex justify-content-between">
+              {% if task.paid_status == 'P' %}
+                <span data-bs-toggle="tooltip" title="Task is fully paid">
+                  <button type="button" class="btn btn-secondary fw-bold px-4" disabled>
+                    ✅ Submit Payment
+                  </button>
+                </span>
+
+                {% if not task.closed %}
+                  <!-- Cancel Button -->
+                  <form method="post" class="ms-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="cancel_last_payment" value="1">
+                    <span data-bs-toggle="tooltip" title="Cancel the last payment if full payment was made instead of a down payment.">
+                      <button type="submit" class="btn btn-outline-danger fw-bold">
+                        ❌ Cancel Last Payment
+                      </button>
+                    </span>
+                  </form>
+                {% elif task.closed %}
+                  <span data-bs-toggle="tooltip" title="This task is closed. You can no longer cancel its payments.">
+                    <button type="button" class="btn btn-outline-danger fw-bold" disabled>
+                      ❌ Cancel Last Payment
+                    </button>
+                  </span>
+                  
+                {% endif %}
+
+              {% else %}
+                <!-- Normal Submit Button -->
+                <button type="submit" class="btn btn-success fw-bold px-4">
+                  ✅ Submit Payment
+                </button>
+              {% endif %}
+
+              <a href="{% url 'payments:unpaid_jobs' %}" class="btn btn-outline-secondary fw-semibold px-4">
+                ❌ Go Back
+              </a>
+            </div>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const paymentType = document.getElementById("id_payment_type");
+    const amountField = document.getElementById("id_amount");
+
+    const total = parseFloat("{{ task.final_price|floatformat:2 }}");
+    const paid = parseFloat("{{ paid_so_far|floatformat:2 }}");
+    const remaining = (total - paid).toFixed(2);
+
+    function updateAmount() {
+      if (paymentType.value === "full") {
+        amountField.value = remaining;
+        amountField.readOnly = true;
+      } else {
+        amountField.value = "";
+        amountField.readOnly = false;
+      }
+    }
+
+    if (paymentType && amountField) {
+      paymentType.addEventListener("change", updateAmount);
+      updateAmount();
+    }
+  });
+</script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const paymentType = document.getElementById("id_payment_type");
+    const amountField = document.getElementById("id_amount");
+
+    const total = parseFloat("{{ task.final_price|floatformat:2 }}");
+    const paid = parseFloat("{{ paid_so_far|floatformat:2 }}");
+    const remaining = (total - paid).toFixed(2);
+
+    function updateAmount() {
+      if (paymentType.value === "full") {
+        amountField.value = remaining;
+        amountField.readOnly = true;
+      } else {
+        amountField.value = "";
+        amountField.readOnly = false;
+      }
+    }
+
+    if (paymentType && amountField) {
+      paymentType.addEventListener("change", updateAmount);
+      updateAmount();
+    }
+
+    // ✅ Activate Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+</script>
+{% endblock extra_js %}

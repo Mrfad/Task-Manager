@@ -1,0 +1,143 @@
+{% extends 'custom_email/base_email.html' %}
+
+{% block title %}{{ email.subject }}{% endblock %}
+
+
+{% block background-image %}{% endblock background-image %}
+
+{% block email_content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3">
+  <!-- Back to Inbox -->
+  {% with redirect_url=folder|default:'inbox' %}
+    <a href="{{ request.META.HTTP_REFERER|default:redirect_url }}" class="btn btn-outline-secondary mb-2 mb-sm-0">
+      ← Back
+    </a>
+  {% endwith %}
+
+  <div class="d-flex flex-column flex-sm-row gap-2">
+  {% if email.task %}
+    <a href="{% url 'tasks:task_detail' email.task.id %}" class="btn btn-success">
+      <i class="fas fa-eye"></i> View Assigned Task
+    </a>
+  {% else %}
+    <a href="{% url 'tasks:create_from_email' email.id %}"
+      class="btn btn-warning"
+      title="This feature is experimental and may change">
+      <i class="fas fa-flask"></i> Create Task from Email
+      <span class="badge bg-warning text-dark ms-2">EXPERIMENTAL</span>
+    </a>
+  {% endif %}
+
+<!-- Reply Button -->
+  <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#replyModal">
+    <i class="fa-solid fa-reply me-1"></i> Reply
+  </button>
+  </div>
+</div>
+
+<!-- Reply Form -->
+
+  <!-- Email Header -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body p-3 p-sm-4">
+      <h5 class="card-title">{{ email.subject }}</h5>
+      <h6 class="card-subtitle text-muted mb-2">From: {{ email.sender }}</h6>
+      <p class="card-text"><strong>To:</strong> {{ email.recipients }}</p>
+      <p class="card-text text-muted"><small>Received: {{ email.date_received|date:"Y-m-d H:i" }}</small></p>
+    </div>
+  </div>
+
+  <!-- Email Body -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body p-3 p-sm-4" style="white-space: pre-wrap;">
+      {{ email.body }}
+    </div>
+
+    <!-- Attachments Section -->
+    {% if attachments %}
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h6>Attachments</h6>
+          <ul class="list-unstyled">
+            {% for attachment in attachments %}
+              {% with attachment.filename|lower as fname %}
+                {% if ".jpg" in fname or ".jpeg" in fname or ".png" in fname or ".gif" in fname %}
+                  <li class="mb-3">
+                    <strong>{{ attachment.filename }}</strong><br>
+                    <img src="{{ attachment.file.url }}" class="img-fluid rounded shadow-sm" alt="{{ attachment.filename }}">
+                  </li>
+                {% elif ".pdf" in fname %}
+                  <li class="mb-2">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+                    <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.filename }}</a>
+                  </li>
+                {% elif ".doc" in fname or ".docx" in fname or ".xlsx" in fname or ".txt" in fname or ".zip" in fname %}
+                  <li class="mb-2">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.filename }}</a>
+                  </li>
+                {% else %}
+                  <li class="mb-2">
+                    <i class="bi bi-file-earmark"></i>
+                    <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.filename }}</a>
+                  </li>
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+
+{% include 'custom_email/modals/reply-email-modal.html' with prefill=prefill email=email %}
+
+{% endblock %}
+
+{% block extra_js %}
+{{ prefill.recipients|json_script:"tagify_to" }}
+{{ prefill.cc|json_script:"tagify_cc" }}
+{{ prefill.bcc|json_script:"tagify_bcc" }}
+
+<script src="https://unpkg.com/@yaireo/tagify"></script>
+<link rel="stylesheet" href="https://unpkg.com/@yaireo/tagify/dist/tagify.css" />
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toTagify = new Tagify(document.querySelector('#id_to'));
+    const ccTagify = new Tagify(document.querySelector('#id_cc'));
+    const bccTagify = new Tagify(document.querySelector('#id_bcc'));
+
+    try {
+      toTagify.addTags(JSON.parse(document.getElementById('tagify_to').textContent));
+      ccTagify.addTags(JSON.parse(document.getElementById('tagify_cc').textContent));
+      bccTagify.addTags(JSON.parse(document.getElementById('tagify_bcc').textContent));
+    } catch (e) {
+      console.warn("Tagify failed to load prefill data", e);
+    }
+
+    // Shared fetch logic for Tagify fields
+    function setupAjaxSuggestions(tagifyInstance) {
+      tagifyInstance.on('input', async function (e) {
+        const value = e.detail.value.trim();
+        if (value.length < 2) return;
+
+        try {
+          const response = await fetch("{% url 'mail:customer_email_suggestions' %}?q=" + encodeURIComponent(value));
+          const data = await response.json();
+          tagifyInstance.settings.whitelist = data;
+          tagifyInstance.dropdown.show.call(tagifyInstance, value);
+        } catch (err) {
+          console.error('Error fetching suggestions:', err);
+        }
+      });
+    }
+
+    setupAjaxSuggestions(toTagify);
+    setupAjaxSuggestions(ccTagify);
+    setupAjaxSuggestions(bccTagify);
+  });
+</script>
+{% endblock extra_js %}
+

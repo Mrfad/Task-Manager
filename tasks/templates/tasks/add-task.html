@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{#% load crispy_forms_tags %#}
+{% load humanize %}
+{% load widget_tweaks %}
+{% block title %}Add Tasks{% endblock title %}
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block content %}
+<!-- ✅ MODALS for Task Name & Customer -->
+{% include 'tasks/modals/add-taskname-modal.html' %}
+{% include 'customers/modals/add-customer-modal.html' %}
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <!-- ✅ Card -->
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white d-flex align-items-center">
+          <i class="fas fa-plus me-2"></i>
+          <h5 class="mb-0">Create New Task</h5>
+        </div>
+
+        <div class="card-body">
+          <form method="POST" enctype="multipart/form-data" class="was-validated" novalidate>
+            {% csrf_token %}
+
+            <!-- ⚙️ Customer + Project Row -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Customer</label>
+                <div class="input-group">
+                <select name="customer_name" id="id_customer_name" class="form-select form-select-sm select2" required>
+                    <option value="" disabled selected>Search by name or phone or company</option>
+                    {% for customer in customers %}
+                      <option value="{{ customer.pk }}"
+                        {% if form.customer_name.value|stringformat:"s" == customer.pk|stringformat:"s" or customer.pk == selected_customer_id %}selected{% endif %}>
+
+                        {{ customer.customer_name }} - {{ customer.customer_phone }} - {{customer.company}}
+                      </option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                  <i class="fas fa-plus"></i>
+                </button>
+                  <!-- After the customer select field -->
+                  <div id="customer-loading" class="spinner-border text-primary ms-2" role="status" style="display: none; width: 1.5rem; height: 1.5rem;">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Project</label>
+                {% render_field form.project class="form-select form-select-sm" %}
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Branch</label>
+                {% render_field form.branch class="form-select form-select-sm" %}
+              </div>
+            </div>
+
+            <!-- 📛 Task Name + Priority + Price -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Task Name</label>
+                <div class="input-group">
+                  {% render_field form.task_name class="form-select form-select-sm" %}
+                  <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaskNameModal">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Priority</label>
+                {% render_field form.task_priority class="form-select form-select-sm" %}
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Frontdesk Price</label>
+                {% render_field form.frontdesk_price class="form-control form-control-sm" %}
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Currency</label>
+                {% render_field form.currency class="form-control form-control-sm" %}
+              </div>
+            </div>
+
+            <!-- 👤 PM + 💳 Payment -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Project Manager</label>
+                {% render_field form.user class="form-select form-select-sm" %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Payment Method</label>
+                {% render_field form.payment_method class="form-select form-select-sm" %}
+              </div>
+            </div>
+
+            <!-- 📆 Due Date + 📎 File -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Due Date</label>
+                {% render_field form.job_due_date class="form-control form-control-sm" %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">File (optional)</label>
+                {% render_field form.file_name class="form-control form-control-sm" %}
+              </div>
+            </div>
+
+            <!-- 📝 Notes -->
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              {% render_field form.notes class="form-control form-control-sm" %}
+            </div>
+
+            <!-- ✅ Submit / Cancel -->
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{% url 'tasks:all_tasks' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-times"></i> Cancel
+              </a>
+              <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fas fa-check"></i> Submit Task
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_css %}
+<style>
+  .form-control, .form-select {
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .card {
+    border-radius: 12px;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: #e9ecef;
+  }
+  select[disabled].select2-hidden-accessible + .select2-container {
+    opacity: 0.8;
+    background-color: #f8f9fa;
+}
+
+  .readonly-style {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+</style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+
+{% if request.session.show_add_customer_modal %}
+  <script>
+    const modal = new bootstrap.Modal(document.getElementById('addCustomerModal'));
+    modal.show();
+  </script>
+{% endif %}
+
+<script>
+$(document).ready(function () {
+    // Initialize Select2
+    const $customerSelect = $('#id_customer_name');
+    $customerSelect.select2({
+        theme: 'bootstrap-5',
+        placeholder: "Search by name, phone or company",
+        allowClear: true
+    });
+
+    const $projectSelect = $('#id_project');
+    const $spinner = $('#customer-loading');
+    let hiddenCustomerInput = null;
+
+    // When project changes
+    $projectSelect.on('change', function () {
+        const projectId = $(this).val();
+
+        // Remove any existing hidden input
+        if (hiddenCustomerInput) {
+            hiddenCustomerInput.remove();
+            hiddenCustomerInput = null;
+        }
+
+        // Show loading spinner
+        $spinner.show();
+
+        if (!projectId) {
+            // Re-enable customer field if no project selected
+            $customerSelect.prop('disabled', false).val('').trigger('change');
+            $spinner.hide();
+            return;
+        }
+
+        // Make AJAX call to get customer based on project
+        $.ajax({
+            url: '{% url "tasks:get_customer_by_project" %}',
+            data: { project_id: projectId },
+            type: 'GET',
+            success: function (data) {
+                if (data && data.customer_id && data.customer_name) {
+                    // Check if option already exists, if not, append it
+                    if ($customerSelect.find(`option[value="${data.customer_id}"]`).length === 0) {
+                        $customerSelect.append(
+                            $('<option>', {
+                                value: data.customer_id,
+                                text: data.customer_name
+                            })
+                        );
+                    }
+
+                    // Set value and disable the select
+                    $customerSelect.val(data.customer_id).trigger('change');
+                    $customerSelect.prop('disabled', true);
+
+                    // Add hidden input to preserve the value
+                    hiddenCustomerInput = $(`<input type="hidden" name="customer_name" value="${data.customer_id}">`);
+                    $customerSelect.after(hiddenCustomerInput);
+                } else {
+                    // No customer found
+                    $customerSelect.val('').trigger('change');
+                    $customerSelect.prop('disabled', false);
+                }
+            },
+            error: function () {
+                alert("Failed to fetch customer info.");
+                $customerSelect.prop('disabled', false);
+            },
+            complete: function () {
+                $spinner.hide();
+            }
+        });
+    });
+
+    // Enable customer field manually if project is cleared
+    if (!$projectSelect.val()) {
+        $customerSelect.prop('disabled', false);
+    }
+});
+</script>
+{% endblock extra_js %}

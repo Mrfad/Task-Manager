@@ -1,0 +1,112 @@
+{% load humanize %}
+{% load group_check %}
+{% if not task.canceled %}
+{% endif %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h5 class="mb-3">Subtasks</h5>
+        <div class="table-responsive">
+        <table class="table table-bordered table-hover table-striped align-middle">
+        <thead class="table-dark">
+            <tr>
+            <th scope="col">Operator</th>
+            <th scope="col">Status</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Creation data</th>
+            <th scope="col">Created by</th>
+            <th scope="col">Finished</th>
+            <th scope="col">Notes</th>
+            <th scope="col">Subtask Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subtask in subtasks %}
+            <tr>
+            <td>
+                <a href="{% url 'users:profile_view' %}" class="text-primary">
+                {% if subtask.user.first_name or subtask.user.last_name %}
+                    {{ subtask.user.get_full_name|default:subtask.user.username|title }}
+                {% else %}
+                    {{ subtask.user.username|title }}
+                {% endif %}
+                </a>
+                {% if subtask.is_project_manager %}
+                <span class="badge bg-info">Project Manager</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if task.status == 'canceled' %}
+                    <span class="bg-secondary text-white p-1">Cancelled</span>
+                {% elif subtask.is_done %}
+                    <span class="bg-success text-white p-1">Done</span>
+                {% elif subtask.is_highlighted %}
+                    <i class="fa-solid fa-check"></i>
+                {% elif not subtask.is_done %}
+                    <span class=" badge bg-warning text-white p-1">Please {{request.user}} finish you job</span>
+                {% elif subtask.is_done %}
+                    <span class="badge bg-succes text-white p-1">Done</span>
+                {% endif %}
+            </td>
+            <td>{{ subtask.subtask_amount|intcomma }} {{ subtask.currency }}</td>
+            <td>{{ subtask.created_at|date:"Y-m-d H:i" }}</td>
+            <td>{{ subtask.task.created_by }}</td>
+            <td>
+                {% if task.status == 'canceled' %}
+                    <span class="bg-secondary text-white p-1">Cancelled</span>
+                {% elif subtask.is_done %}
+                <span class="text-success">{{ subtask.finished_at|date:"Y-m-d H:i" }}</span>
+                <i class="text-success fa-solid fa-clipboard-check"></i>
+                {% elif subtask.cancel_requested %}
+                <span class="text-warning">Cancel Request pending</span>
+                <i class="fas fa-clock text-warning me-1"></i>
+                {% else %}
+                <span class="text-warning">{% if subtask.is_updated %}In Progress{% else %}Not started yet{% endif %}</span>
+                <i class="text-warning fa-solid fa-hourglass-half"></i>
+                {% endif %}
+            </td>
+            <td>
+                {% if subtask.notes_from_top %}
+                <div>
+                    {{ subtask.notes_from_top|truncatechars:50 }}
+                    {% if subtask.notes_from_top|length > 50 %}
+                    <a href="#" data-bs-toggle="collapse" data-bs-target="#note-{{ subtask.id }}" aria-expanded="false" aria-controls="note-{{ subtask.id }}">Read more</a>
+                    <div class="collapse mt-1" id="note-{{ subtask.id }}">
+                        {{ subtask.notes_from_top }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                —
+                {% endif %}
+            </td>
+            <td>
+                {% if request.user == subtask.user or request.user|in_group:"Developer|Managers|ManagerAssistant" %}
+                    {% if not task.closed and not task.canceled %}
+                        <button class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#u{{ subtask.id }}">Update</button>
+                        {% if not subtask.cancel_requested %}
+                            <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#c{{subtask.id}}">Cancel</button>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#uc{{subtask.id}}">Undo Cancel request</button>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+                {% if request.user|in_group:"Developer|Managers|ManagerAssistant" or task.is_created_by_current_user  %}
+                    {% if subtask.cancel_requested %}
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#ac{{subtask.id}}">Approve Cancel Request</button>
+                    {% else %}
+                        
+                    {% endif %}
+                {% endif %}
+            </td>
+            </tr>
+            {% include 'tasks/modals/update-subtask-modal.html' %}
+            {% include 'tasks/modals/send-cancel-subtask-request-modal.html' %}
+            {% include 'tasks/modals/undo-cancel-subtask-request-modal.html' %}
+            {% include 'tasks/modals/approve-cancel-request-modal.html' %}
+            {% endfor %}
+        </tbody>
+        </table>
+        </div>
+    </div>
+    </div>
+</div>

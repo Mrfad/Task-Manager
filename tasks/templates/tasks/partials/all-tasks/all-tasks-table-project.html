@@ -1,0 +1,142 @@
+{% load static %}
+{% load humanize %}
+{% load group_check %}
+{% load tz %}
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover table-bordered align-middle project-view-table">
+        <thead class="table-primary">
+            <tr>
+                <th colspan="8" class="p-3"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in project_groups %}
+            <tr class="project-group-header" data-bs-toggle="collapse" data-bs-target="#project-tasks-{{ project.id }}" aria-expanded="true">
+                <td colspan="8">
+                    <i class="fas fa-chevron-down"></i>  <!-- Changed to down arrow -->
+                    <strong>{{ project.name }}</strong>
+                    <span class="project-group-count">{{ project.task_set.count }} tasks</span>
+                </td>
+            </tr>
+    
+            <tr id="project-tasks-{{ project.id }}" class="collapse show">  <!-- Added show class -->
+                <td colspan="8" class="p-0">
+                    <table class="table table-sm table-hover mb-0 project-tasks-table">
+                        <thead>
+                            <tr class="table-secondary">
+                                <th>Job#</th>
+                                <th>Job Name</th>
+                                <th>Status</th>
+                                <th>
+                                    {% if sort_by == 'final_price' %}
+                                        <a href="?sort=-final_price&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Price &#9650;</a>
+                                    {% elif sort_by == '-final_price' %}
+                                        <a href="?sort=final_price&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Price &#9660;</a>
+                                    {% else %}
+                                        <a href="?sort=final_price&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Price &#9650;</a>
+                                    {% endif %}
+                                </th>
+                                <th>
+                                    {% if sort_by == 'total_paid' %}
+                                        <a href="?sort=-total_paid&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Paid Amount &#9650;</a>
+                                    {% elif sort_by == '-total_paid' %}
+                                        <a href="?sort=total_paid&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Paid Amount &#9660;</a>
+                                    {% else %}
+                                        <a href="?sort=total_paid&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Paid Amount &#9650;</a>
+                                    {% endif %}
+                                </th>
+                                <th>Employee</th>
+                                <th>Due Date</th>
+                                <th class="text-center">View</th>
+                                {% if request.user|in_group:"Developer|Manager|ManagerAssistant|FrontDesk" %}
+                                    <th class="text-center">Edit</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in project.task_set.all %}
+                            <tr class="project-task-row {% if task.is_highlighted %}table-info{% endif %}">
+                                <td>{{ task.order_number }}</td>
+                                <td><a href="{% url 'tasks:task_detail' task.pk %}">{{ task.task_name }}</a></td>
+                                <td>
+                                    {% if task.status == 'delivered' %}
+                                        <span class="badge bg-success text-white txt-7 px-3 py-2 rounded-pill shadow-sm">
+                                            <i class="fas fa-box-open me-1"></i> Delivered
+                                        </span>
+                                    {% elif task.status == 'closed' %}
+                                        <span class="badge bg-dark text-white txt-7 px-3 py-2 rounded-pill shadow-sm">
+                                            <i class="fas fa-lock me-1"></i> Closed
+                                        </span>
+                                    {% elif task.status == 'done' %}
+                                        <span class="badge bg-warning text-dark txt-7 px-3 py-2 rounded-pill shadow-sm">
+                                            <i class="fas fa-check-circle me-1"></i> Done
+                                        </span>
+                                    {% elif task.status == 'in_progress' %}
+                                        <span class="badge bg-info text-white txt-7 px-3 py-2 rounded-pill shadow-sm">
+                                            <i class="fas fa-hourglass-half me-1"></i> In Progress
+                                        </span>
+                                    {% elif task.status == 'created' %}
+                                        <span class="badge bg-light text-dark txt-7 px-3 py-2 rounded-pill shadow-sm">
+                                            <i class="fas fa-plus-circle me-1"></i> Created
+                                        </span>
+                                    {% elif task.status == 'canceled' %}
+                                        <span class="badge bg-danger text-white txt-7 px-3 py-2 rounded-pill shadow-sm">
+                                            <i class="fas fa-times-circle me-1"></i> Canceled
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ task.final_price|intcomma }} {{ task.currency }}</td>
+                                <td>
+                                    {% if task.paid_status == 'P' %}
+                                        <span class="badge bg-success text-white txt-7 px-3 py-2 rounded-pill shadow-sm">
+                                            <i class="fas fa-money-bill-wave me-1"></i> Paid
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger text-white txt-7 px-3 py-2 rounded-pill shadow-sm">
+                                            <i class="fas fa-exclamation-circle me-1"></i> Unpaid
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% for employee in task.assigned_employees.all %}
+                                        {{ employee.get_full_name|default:employee.username }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% if task.job_due_date %}
+                                        {{ task.job_due_date|date:"Y-m-d" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-info">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                </td>
+                                {% if request.user|in_group:"Developer|Manager|ManagerAssistant|FrontDesk" %}
+                                    <td class="text-center">
+                                        <a href="{% url 'tasks:update_task_view' task.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center">No tasks in this project</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">No projects found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

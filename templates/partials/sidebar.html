@@ -1,0 +1,13 @@
+    {% if user.is_authenticated %}
+        <center>
+            <!-- Welcome User -->
+            <span class="text-dark fs-3"> Welcome:</span> <span class="text-success fs-3">{{user.get_username}}</span>
+            <br>
+            <br>
+        </center>
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'users:profile_view' %}">Profile</a>
+        <a class="btn btn-outline-danger btn-sm" href="{% url 'users:logout' %}">Logout</a>
+        {% if request.user.groups.all.0.name == 'Developer' %}
+            <a href="{% url 'admin:index' %}" target="_blank" class="btn btn-outline-success btn-sm">Admin</a>
+        {% endif %}
+    {% endif %}

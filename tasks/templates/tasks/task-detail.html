@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load group_check %}
+{% load progressbar_tags %}
+{% block title %}Task manager | All Tasks{% endblock title %}
+
+{% block extra_css %}
+<link href="{% static 'css/task-detail.css' %}" rel="stylesheet">
+{% endblock extra_css %}
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block content %}
+{% if user.is_authenticated %}
+<div class="content-area flex-grow-1 px-3">
+  <section class="content">
+    <div class="card text-center width-100 mx-auto">
+      <div class="card-header">
+        <div class="task-header">
+          <div class="row">
+
+            <div class="col-auto text-start">
+              <a href="{{ back_url }}" class="btn btn-sm btn-success back-btn">
+              <i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+
+            <div class="col-auto">
+              <h3 class="card-title text-center">
+                <strong>Projects Detail:</strong> {{ task.task_name|title }} {{ task.order_number }} 
+
+                <span class="text-success fs-1 ms-5"> <strong>{{task.status|title}} <i class="fa-solid fa-calendar-check"></i></strong></span>
+
+
+                {% if task.frontdesk_price > 0 %}
+                  <strong class="p-3 mb-2 text-danger">{{ task.created_by.get_full_name|title }} has set the initial price at  {{ task.frontdesk_price }}$</strong>
+                {% endif %}
+              </h3>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="card my-4">
+        {% include 'tasks/partials/task-detail/logging.html' %}
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 col-md-12 col-lg-8 order-1 order-md-1">
+
+              {% if task.payment_status %}
+                <div class="alert {% if task.payment_status.is_fully_paid %}alert-success{% elif task.payment_status.is_down_payment_only %}alert-warning{% else %}alert-secondary{% endif %} d-flex align-items-center mt-0" role="alert">
+                  <i class="fas fa-money-check-alt me-2"></i>
+                  <div>
+                    <strong>
+                      {% if task.payment_status.is_fully_paid %}
+                        Fully Paid
+                      {% elif task.payment_status.is_down_payment_only %}
+                        Partially Paid
+                      {% else %}
+                        Not Paid
+                      {% endif %}
+                    </strong>
+                    — Amount: <strong>{{ task.payment_status.paid_amount|floatformat:2 }}</strong> {{ task.currency }}
+                    {% with latest=task.payments.last %}
+                      {% if latest %}
+                        <span class="ms-3 text-muted">(Last payment: {{ latest.paid_at|date:"M d, Y H:i" }})</span>
+                      {% endif %}
+                    {% endwith %}
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if task.status == 'canceled' %}
+                  <div class="alert alert-warning text-center">
+                      <i class="fas fa-ban text-danger me-2"></i> This task has been <strong>canceled</strong>.
+                  </div>
+              {% else %}
+                  {% render_progressbar task %}
+              {% endif %}
+
+              <div class="card border-info mb-3">
+                <div class="card-header bg-info text-white">
+                  <i class="fas fa-map-marker-alt me-2"></i> Final Job Location & Info
+                </div>
+                <div class="card-body">
+                  {% if task.resolved_final_location %}
+                    <div class="d-flex justify-content-center mt-3 mb-4">
+                      <div class="alert alert-info shadow-sm d-inline-flex align-items-center gap-2 py-2 px-4 mb-0" role="alert">
+                        <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                        <strong>Current Job Location:</strong> 
+                        <span class="ms-2">{{ task.resolved_final_location }}</span>
+                      </div>
+                    </div>
+                  {% endif %}
+                  <p><strong>Due Date:</strong> {{ task.job_due_date|date:"M d, Y" }}</p>
+                  <p><strong>Assigned Operator(s):</strong>
+                    {% for emp in task.assigned_employees.all %}
+                      {{ emp.get_full_name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                      <span class="text-muted">Not assigned</span>
+                    {% endfor %}
+                  </p>
+                </div>
+              </div>
+              {% include 'tasks/partials/task-detail/task-detail-badges.html' %}
+              {% include 'tasks/partials/task-detail/task-detail-table.html' %}
+              {% include 'tasks/partials/task-detail/job-detail-tabs.html' %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% else %}
+  <h1 class="text-center text-danger">You are not allowed to view this page!!</h1>
+{% endif %}
+{% include 'tasks/modals/add-subtask-modal.html' %}
+{% include 'tasks/modals/close-task-modal.html' %}
+{% include 'tasks/modals/undo-close-task-modal.html' %}
+{% include 'tasks/modals/cancel-task-modal.html' %}
+{% endblock content %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const collapseElement = document.getElementById('activityLogCollapse');
+    const toggleButton = document.getElementById('toggleActivityLogBtn');
+
+    collapseElement.addEventListener('shown.bs.collapse', function () {
+        toggleButton.textContent = 'Collapse';
+    });
+
+    collapseElement.addEventListener('hidden.bs.collapse', function () {
+        toggleButton.textContent = 'Expand';
+    });
+});
+
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const cancelBtn = document.querySelector('[data-bs-target="#cancelTaskModal"]');
+    if (cancelBtn) {
+      new bootstrap.Tooltip(cancelBtn);
+    }
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const cancelBtn = document.querySelector('[data-bs-target="#closeTaskModal"]');
+    if (cancelBtn) {
+      new bootstrap.Tooltip(cancelBtn);
+    }
+  });
+</script>
+
+
+
+{% if request.GET.error_modal %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const modalId = "{{ request.GET.error_modal }}";
+      const modal = new bootstrap.Modal(document.getElementById(modalId));
+      modal.show();
+    });
+  </script>
+{% endif %}
+{% endblock extra_js %}

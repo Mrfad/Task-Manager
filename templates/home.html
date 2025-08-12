@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Task manager | Home{% endblock %}
+<!-- Block Sidebar content -->
+{% block sidebar-content %}
+<center>
+    <!-- Welcome User -->
+    <span class="text-dark fs-3"> Welcome: </span> <span class="text-success fs-3">{{user.get_username}}</span>
+    <br>
+    <br>
+</center>
+<a class="btn btn-outline-primary btn-sm" href="{#% url 'profile' request.user.profile.id %#}">Profile</a>
+<a class="btn btn-outline-danger btn-sm" href="{% url 'users:logout' %}">Logout</a>
+{% if user.profile.department|stringformat:"s" == "Developer" %}
+    <a href="{% url 'admin:index' %}" target="_blank" class="btn btn-outline-success btn-sm">Admin</a>
+{% endif %}
+{% endblock sidebar-content %}
+{% block content %}
+
+<h1 class="mt-5" style="color: #bebcbc">Welcome to Task Manager {{request.user}}</h1>
+
+
+
+<div class="button-container">
+
+</div>
+
+{% endblock content %}
+
+{% block js %}
+<script>
+
+</script>
+{% endblock js %}

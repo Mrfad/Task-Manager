@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{#% load crispy_forms_tags %#}
+{% load humanize %}
+{% block title %}Task manager | All Tasks{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .card {
+    border: none;
+    box-shadow: 0 0.15rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.table thead th {
+    background-color: #343a40;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.table td {
+    font-size: 0.85rem;
+}
+
+.btn-sm i {
+    font-size: 0.9rem;
+}
+
+.btn-outline-info:hover {
+    background-color: #0dcaf0;
+    color: white;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+</style>
+{% endblock extra_css %}
+
+{% block background-image %}
+{% endblock background-image %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow rounded">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Customers</h5>
+            <a href="{% url 'customers:add_customer' %}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-1"></i> Add Customer
+            </a>
+        </div>
+        <div class="card-body table-responsive">
+            <table id="customersTable" class="table table-striped table-hover table-bordered align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Account #</th>
+                        <th>Name</th>
+                        <th>Company</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Email</th>
+                        <th>Tax #</th>
+                        <th class="text-center">View</th>
+                        <th class="text-center">Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+    $('#customersTable').DataTable({
+        serverSide: true,
+        processing: true,
+        ajax: {
+            url: "{% url 'customers:customers_data' %}",
+            type: "GET"
+        },
+        columns: [
+            { data: "account_number" },
+            { data: "customer_name" },
+            { data: "company" },
+            { data: "customer_phone" },
+            { data: "customer_address" },
+            { data: "email" },
+            { data: "tax_number" },
+            { data: "view", orderable: false, searchable: false },
+            { data: "edit", orderable: false, searchable: false }
+        ],
+        dom: '<"dt-toolbar d-flex  justify-content-start align-items-center mb-3"lfB>rtip',
+        pageLength: 30,
+        BInfo: true,
+        bSort: true,
+        language: {
+            lengthMenu: 'Entries: _MENU_'
+        },
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<i class="fas fa-copy"></i> Copy',
+                className: 'btn btn-secondary btn-sm'
+            },
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel"></i> Excel',
+                className: 'btn btn-success btn-sm'
+            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf"></i> PDF',
+                className: 'btn btn-danger btn-sm'
+            },
+            {
+                extend: 'print',
+                text: '<i class="fas fa-print"></i> Print',
+                className: 'btn btn-primary btn-sm'
+            }
+        ]
+    });
+});
+
+</script>
+{% endblock extra_js %}

@@ -1,0 +1,254 @@
+{% load static %}
+{% load humanize %}
+{% load group_check %}
+{% load tz %}
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover table-bordered align-middle normal-table">
+        <thead class="table-primary">
+            <tr>
+                <th>
+                    {% if sort_by == 'order_number' %}
+                        <a href="?sort=-order_number&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Job# &#9650;</a>
+                    {% elif sort_by == '-order_number' %}
+                        <a href="?sort=order_number&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Job# &#9660;</a>
+                    {% else %}
+                        <a href="?sort=order_number&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Job# &#9650;</a>
+                    {% endif %}
+                </th>
+    
+                <th>
+                    {% if sort_by == 'task_name__name' %}
+                        <a href="?sort=-task_name__name&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Job Name &#9650;</a>
+                    {% elif sort_by == '-task_name__name' %}
+                        <a href="?sort=task_name__name&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Job Name &#9660;</a>
+                    {% else %}
+                        <a href="?sort=task_name__name&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Job Name &#9650;</a>
+                    {% endif %}
+                </th>
+    
+                <th>
+                    {% if sort_by == 'status' %}
+                        <a href="?sort=-status&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Status &#9650;</a>
+                    {% elif sort_by == '-status' %}
+                        <a href="?sort=status&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Status &#9660;</a>
+                    {% else %}
+                        <a href="?sort=status&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Status &#9650;</a>
+                    {% endif %}
+                </th>
+                <th>
+                    {% if sort_by == 'final_price' %}
+                        <a href="?sort=-final_price&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Price &#9650;</a>
+                    {% elif sort_by == '-final_price' %}
+                        <a href="?sort=final_price&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Price &#9660;</a>
+                    {% else %}
+                        <a href="?sort=final_price&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Price &#9650;</a>
+                    {% endif %}
+                </th>
+                <!-- Paid Amount column header -->
+                <th>Paid Amount</th>
+    
+                <!-- Is Paid column header -->
+                <th>
+                    {% if sort_by == 'paid_status' %}
+                        <a href="?sort=-paid_status&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee|default:'' }}&group_filter={{ selected_group|default:'' }}">Is Paid &#9650;</a>
+                    {% elif sort_by == '-paid_status' %}
+                        <a href="?sort=paid_status&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee|default:'' }}&group_filter={{ selected_group|default:'' }}">Is Paid &#9660;</a>
+                    {% else %}
+                        <a href="?sort=paid_status&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee|default:'' }}&group_filter={{ selected_group|default:'' }}">Is Paid &#9650;</a>
+                    {% endif %}
+                </th>
+                <th>Created By</th>
+                <th>
+                    {% if sort_by == 'assigned_employees__username' %}
+                        <a href="?sort=-assigned_employees__username&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Employee &#9650;</a>
+                    {% elif sort_by == '-assigned_employees__username' %}
+                        <a href="?sort=assigned_employees__username&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Employee &#9660;</a>
+                    {% else %}
+                        <a href="?sort=assigned_employees__username&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Employee &#9650;</a>
+                    {% endif %}
+                </th>
+                <th>
+                    {% if sort_by == 'customer_name__customer_name' %}
+                        <a href="?sort=-customer_name__customer_name&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Customer &#9650;</a>
+                    {% elif sort_by == '-customer_name__customer_name' %}
+                        <a href="?sort=customer_name__customer_name&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Customer &#9660;</a>
+                    {% else %}
+                        <a href="?sort=customer_name__customer_name&search={{ search_query }}&per_page={{ per_page }}&year={{ current_year }}&assigned_employee={{ request.GET.assigned_employee }}&group_filter={{ selected_group }}">Customer &#9650;</a>
+                    {% endif %}
+                </th>
+                <th>Created At</th>
+                <th>Due Date</th>
+                <th class="text-center">View</th>
+    
+                {% if request.user|in_group:"Developer|Manager|ManagerAssistant|FrontDesk" %}
+                    <th class="text-center">Edit</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr class="{% if task.is_highlighted %}table-info{% endif %}">
+                <td>{{ task.order_number }}</td>
+                <td><a href="{% url 'tasks:task_detail' task.pk %}">{{ task.task_name }}</a></td>
+    
+                <td>
+                    {% if task.status == 'delivered' %}
+                        <span 
+                            class="badge bg-success text-white txt-7 px-3 py-2 rounded-pill shadow-sm"
+                            data-bs-toggle="tooltip"
+                            title="This task has been delivered."
+                            style="cursor: default;"
+                        >
+                            <i class="fas fa-box-open me-1"></i> Delivered
+                        </span>
+
+                    {% elif task.status == 'closed' %}
+                        <span 
+                            class="badge bg-dark text-white txt-7 px-3 py-2 rounded-pill shadow-sm"
+                            data-bs-toggle="tooltip"
+                            title="Task is closed but not yet delivered."
+                            style="cursor: default;"
+                        >
+                            <i class="fas fa-lock me-1"></i> Closed (Not Delivered)
+                        </span>
+
+                    {% elif task.status == 'done' %}
+                        <span 
+                            class="badge bg-warning text-dark txt-7 px-3 py-2 rounded-pill shadow-sm"
+                            data-bs-toggle="tooltip"
+                            title="All operators have marked their work as done."
+                            style="cursor: default;"
+                        >
+                            <i class="fas fa-check-circle me-1"></i> All Operators Done
+                        </span>
+
+                    {% elif task.status == 'in_progress' %}
+                        <span 
+                            class="badge bg-info text-white txt-7 px-3 py-2 rounded-pill shadow-sm"
+                            data-bs-toggle="tooltip"
+                            title="This task is in progress."
+                            style="cursor: default;"
+                        >
+                            <i class="fas fa-hourglass-half me-1"></i> In Progress
+                        </span>
+
+                    {% elif task.status == 'created' %}
+                        <span 
+                            class="badge bg-light text-dark txt-7 px-3 py-2 rounded-pill shadow-sm"
+                            data-bs-toggle="tooltip"
+                            title="This task was created but has not been viewed or updated."
+                            style="cursor: default;"
+                        >
+                            <i class="fas fa-plus-circle me-1"></i> Created
+                        </span>
+
+                    {% elif task.status == 'canceled' %}
+                        <span 
+                            class="badge bg-danger text-white txt-7 px-3 py-2 rounded-pill shadow-sm"
+                            data-bs-toggle="tooltip"
+                            title="This task has been canceled."
+                            style="cursor: default;"
+                        >
+                            <i class="fas fa-times-circle me-1"></i> Canceled
+                        </span>
+                    {% endif %}
+                </td>
+    
+                <td>
+                    {% if task.requires_pricing %}
+                        <span class="badge text-bg-warning text-dark">Waiting for price</span>
+                    {% else %}
+                        <span class="badge text-bg-success">{{task.final_price|intcomma}} {{task.currency}}</span>
+                    {% endif %}
+                </td>
+    
+                <td>
+                    {% if task.total_paid == task.final_price %}
+                        <span class="badge text-bg-success">{{ task.total_paid|intcomma }} {{ task.currency }}</span>
+                    {% else %}
+                        <span class="badge text-bg-danger">{{ task.total_paid|intcomma }} {{ task.currency }}</span>
+                    {% endif %}
+                </td>
+    
+                <td>
+                    {% if task.is_fully_paid %}
+                        <span class="badge text-bg-success">Paid</span>
+                    {% elif task.requires_pricing %}
+                        <span class="badge text-bg-warning text-dark">Waiting for price</span>
+                    {% else %}
+                        <span class="badge text-bg-danger">Unpaid</span>
+                    {% endif %}
+                </td>
+                                        
+                <td>{{ task.created_by }}</td>
+                <td>
+                    {% for employee in task.assigned_employees.all %}
+                        <a href="{% url 'users:profile_detail' employee.id %}">
+                            {{ employee.get_full_name|default:employee.username }}
+                        </a>{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td><a href="{% url 'customers:customer_detail' task.customer_name.customer_id %}">{{ task.customer_name }}</a></td>
+    
+                <td>
+                    <i class="fa-solid fa-calendar-days text-info me-1"></i>
+                    <span class="text-muted txt-7">{{ task.created_at|date:"Y-m-d H:i" }}</span>
+                </td>
+                <td class="text-center">
+                {% if task.closed_at and task.job_due_date %}
+                    {% if task.closed_at.date <= task.job_due_date %}
+                        <span class="badge bg-success text-white px-3 py-2 rounded-pill shadow-sm txt-7">
+                            On Time – {{ task.job_due_date|date:"Y-m-d" }}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger text-white px-3 py-2 rounded-pill shadow-sm txt-7">
+                            Overdue – {{ task.job_due_date|date:"Y-m-d" }}
+                        </span>
+                    {% endif %}
+                {% else %}
+                    {% if task.job_due_date and task.job_due_date > today %}
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm txt-7">
+                            Upcoming – {{ task.job_due_date|date:"Y-m-d" }}
+                        </span>
+                    {% elif task.job_due_date %}
+                        <span class="badge bg-secondary text-white px-3 py-2 rounded-pill shadow-sm txt-7">
+                            {{ task.job_due_date|date:"Y-m-d" }}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-light text-muted px-3 py-2 rounded-pill shadow-sm txt-7">
+                            No Due Date
+                        </span>
+                    {% endif %}
+                {% endif %}
+                </td>
+                <td class="text-center">
+                    <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-info">
+                        <i class="fa fa-eye"></i>
+                    </a>
+                </td>
+    
+                {% if request.user|in_group:"Developer|Manager|ManagerAssistant|FrontDesk" %}
+                    {% if task.closed %}
+                        <td class="text-center">
+                            <a href="#" class="btn btn-sm btn-outline-primary" disabled>
+                                <i class="fa fa-edit text-secondary"></i>
+                            </a>
+                        </td>
+                    {% else %}
+                        <td class="text-center">
+                            <a href="{% url 'tasks:update_task_view' task.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                        </td>
+                    {% endif %}
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="14" class="text-center">No tasks found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

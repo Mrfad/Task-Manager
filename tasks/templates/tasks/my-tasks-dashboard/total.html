@@ -1,0 +1,8 @@
+{% extends 'tasks/my-tasks-dashboard/base-dash.html' %}
+{% block card %}{% if 'all/' in request.path %} class="card bg-info" {% else %} class="card" {% endif %}{% endblock card %}
+{% block link %}{% url 'tasks:my_tasks_query' 'all' %}{% endblock link %}
+{% block icon %}
+    <i class="fa-solid fa-list-check fa-3x {% if 'total/' in request.path %}text-light{% else %}text-secondary{% endif %}"></i>
+{% endblock icon %}
+{% block value %}{% if 'all/' in request.path %}<div id="total" class="text-light">{{total}}</div>{% else %}<div id="total" class="text-dark">{{total}}</div>{% endif %}{% endblock value %}
+{% block dash-title %}{% if 'all/' in request.path %}<div class="text-light">TOTAL</div>{% else %}<div class="text-dark">TOTAL</div>{% endif %}{% endblock dash-title %}

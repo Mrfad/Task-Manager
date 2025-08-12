@@ -1,0 +1,78 @@
+{% load static %}
+{% load humanize %}
+{% load group_check %}
+{% load tz %}
+
+<form method="get" id="taskSearchForm" class="mb-3">
+    <div class="row g-2">  <!-- Changed to row with gutter -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <input type="search" name="search" id="searchInput" placeholder="Search..." value="{{ search_query }}" class="form-control form-control-sm" aria-label="Search Tasks" autocomplete="off">
+        </div>
+        
+        <div class="col-6 col-md-3 col-lg-2">
+            <div class="input-group input-group-sm">
+                <label for="per_page" class="input-group-text">Show:</label>
+                <select name="per_page" id="per_page" class="form-select" onchange="this.form.submit()">
+                    <option value="10" {% if per_page == '10' %}selected{% endif %}>10</option>
+                    <option value="25" {% if per_page == '25' %}selected{% endif %}>25</option>
+                    <option value="50" {% if per_page == '50' %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == '100' %}selected{% endif %}>100</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3 col-lg-2">
+            <div class="input-group input-group-sm">
+                <label for="year" class="input-group-text">Year:</label>
+                <select name="year" id="year" class="form-select" onchange="this.form.submit()">
+                    {% for year in available_years %}
+                        <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3 col-lg-2">
+            <div class="input-group input-group-sm">
+                <label for="branch_filter" class="input-group-text">Branch:</label>
+                <select name="branch_filter" id="branch_filter" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Branches</option>
+                    {% for branch in branches %}
+                        <option value="{{ branch.id }}" {% if branch.id|stringformat:"s" == selected_branch %}selected{% endif %}>{{ branch.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        {% if request.user|in_group:"Developer|Managers|ManagerAssistant|FrontDesk" %}
+        <div class="col-6 col-md-4 col-lg-2">
+            <select name="group_filter" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">All Groups</option>
+                {% for g in target_group_names %}
+                <option value="{{ g }}" {% if g == selected_group %}selected{% endif %}>{{ g }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <select name="assigned_employee" id="assigned_employee" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Select Employee</option>
+                {% for user in employees %}
+                    <option value="{{ user.id }}" {% if user.id|stringformat:"s" == request.GET.assigned_employee %}selected{% endif %}>
+                        {{ user.get_full_name|default:user.username }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <!-- Export Buttons -->
+        <div class="col-12 col-md-4 col-lg-2 d-none d-md-flex gap-2">
+            <a href="{% url 'tasks:export_excel' %}?..." class="btn btn-success btn-sm flex-grow-1">
+                <i class="fas fa-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
+            </a>
+            <a href="{% url 'tasks:export_pdf' %}?..." class="btn btn-danger btn-sm flex-grow-1">
+                <i class="fas fa-file-pdf"></i> <span class="d-none d-sm-inline">PDF</span>
+            </a>
+        </div>
+    </div>
+</form>

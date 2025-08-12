@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load group_check %}
+{% load tz %}
+
+{% block title %}Task manager | All Tasks{% endblock title %}
+
+{% block background-image %}
+{% endblock background-image %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block extra_css %}
+    <link href="{% static 'css/all-tasks.css' %}" rel="stylesheet">
+    <style>
+        .card-task-mobile .card-body p {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    {% include "tasks/all-tasks-dashboard/dashboard.html" %}
+    
+    <div class="card shadow rounded">
+
+        <!-- CARD HEADER -->
+        {% include 'tasks/partials/all-tasks/all-tasks-card-header.html' %}
+
+        <div class="card-body">
+            <!-- SEARCH AND FILTER FORM -->
+            {% include 'tasks/partials/all-tasks/all-tasks-search-filter-form.html' %}
+
+            <!-- Desktop Table View -->
+            <div class="table-responsive d-none d-lg-block">
+                {% include 'tasks/partials/all-tasks/all-tasks-table-normal.html' %}
+            </div>
+
+            <!-- Mobile Card View -->
+            <div class="d-lg-none">
+                <div class="row mt-4">
+                    {% for task in tasks %}
+                        <div class="col-12 mb-3">
+                            <div class="card card-task-mobile {% if task.is_highlighted %}border-info{% endif %}">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0" style="font-size: 0.95rem;">{{ task.task_name }}</h6>
+                                    <span class="badge bg-dark rounded-pill">{{ task.order_number }}</span>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Customer:</strong> {{ task.customer_name }}</p>
+                                    <p><strong>Status:</strong> {{ task.get_status_display }}</p>
+                                    <p><strong>Price:</strong> {{ task.final_price|intcomma }} {{ task.currency }}</p>
+                                    <p><strong>Created:</strong> {{ task.created_at|naturaltime }}</p>
+                                </div>
+                                <div class="card-footer bg-light text-center">
+                                    <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-primary w-100">
+                                        <i class="fa fa-eye me-1"></i> View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col">
+                            <p class="text-center text-muted">No tasks found.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Pagination Info and Links -->
+            {% include 'tasks/partials/all-tasks/all-tasks-pagination.html' %}
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+    <script src="{% static 'js/all-tasks.js' %}"></script>
+<script>
+    // Bootstrap 5 tooltip initializer
+    document.addEventListener('DOMContentLoaded', function () {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    })
+</script>
+
+{% endblock extra_js %}

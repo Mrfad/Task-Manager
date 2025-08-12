@@ -1,0 +1,39 @@
+{% extends 'tasks/all-tasks-dashboard/base-dash.html' %}
+
+{% block card %}
+    {% if 'cancel_request/' in request.path %} 
+        class="card bg-warning" 
+    {% else %} 
+        class="card" 
+    {% endif %}
+{% endblock card %}
+
+{% block link %}
+    {% url 'tasks:all_tasks_query' 'cancel_request' %}
+{% endblock link %}
+
+{% block icon %}
+    {% if 'cancel_request/' in request.path %}
+        <i class="fa-solid fa-2x text-light fas fa-ban"></i>
+        <i class="fa-solid fa-2x text-light fa-hourglass-half"></i>
+    {% else %}
+        <i class="fa-solid fa-2x text-warning fas fa-ban"></i>
+        <i class="fa-solid fa-2x text-warning fa-hourglass-half"></i>
+    {% endif %}
+{% endblock icon %}
+
+{% block value %}
+    {% if 'cancel_request/' in request.path %}
+        <div id="cancelRequest" class="text-light">{{cancel_request}}</div>
+    {% else %}
+        <div id="cancelRequest" class="text-warning">{{cancel_request}}</div>
+    {% endif %}
+{% endblock value %}
+
+{% block dash-title %}
+    {% if 'cancel_request/' in request.path %}
+        <div class="text-light">Cancel Pending</div>
+    {% else %}
+        <div class="text-warning">Cancel Pending</div>
+    {% endif %}
+{% endblock dash-title %}

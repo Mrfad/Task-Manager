@@ -1,0 +1,8 @@
+{% extends 'tasks/my-tasks-dashboard/base-dash.html' %}
+{% block card %}{% if 'pending/' in request.path %} class="card bg-info" {% else %} class="card" {% endif %}{% endblock card %}
+{% block link %}{% url 'tasks:my_tasks_query' 'pending' %}{% endblock link %}
+{% block icon %}
+    <i class="fa-solid fa-hourglass-half fa-3x {% if 'pending/' in request.path %}text-light{% else %}text-warning{% endif %}"></i>
+{% endblock icon %}
+{% block value %}{% if 'pending/' in request.path %}<div id="unfinished" class="text-light" id="pendingJobs">{{unfinished_count}}</div>{% else %}<div id="unfinished" class="text-warning" id="pendingJobs">{{unfinished_count}}</div>{% endif %}{% endblock value %}
+{% block dash-title %}{% if 'pending/' in request.path %}<div class="text-light">Pending</div>{% else %}<div class="text-warning">Pending</div>{% endif %}{% endblock dash-title %}

@@ -1,0 +1,54 @@
+<!-- Modal for Reply Email -->
+<style>
+  .tagify {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.75rem;
+  }
+</style>
+
+<div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{% url 'mail:reply_email' email.id %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="replyModalLabel">Reply to Email</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <!-- TO -->
+          <label for="id_to" class="form-label">To</label>
+          <input type="text" name="recipients" id="id_to" class="form-control tag-email">
+
+          <!-- CC -->
+          <label for="id_cc" class="form-label mt-3">CC</label>
+          <input type="text" name="cc" id="id_cc" class="form-control tag-email">
+
+          <!-- BCC -->
+          <label for="id_bcc" class="form-label mt-3">BCC</label>
+          <input type="text" name="bcc" id="id_bcc" class="form-control tag-email">
+
+          <!-- Subject -->
+          <label for="id_subject" class="form-label mt-3">Subject</label>
+          <input type="text" name="subject" id="id_subject" class="form-control"
+                 value="{{ prefill.subject }}">
+
+          <!-- Body -->
+          <label for="id_body" class="form-label mt-3">Message</label>
+          <textarea name="body" id="id_body" class="form-control" rows="8">{{ prefill.quoted_body }}</textarea>
+
+          <!-- Attachments -->
+          <label for="id_attachments" class="form-label mt-3">Attachments</label>
+          <input type="file" name="attachments" id="id_attachments" class="form-control" multiple>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Send Reply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

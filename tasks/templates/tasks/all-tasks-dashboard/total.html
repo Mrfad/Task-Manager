@@ -1,0 +1,37 @@
+{% extends 'tasks/all-tasks-dashboard/base-dash.html' %}
+
+{% block card %}
+    {% if 'all/' in request.path %} 
+        class="card bg-info" 
+    {% else %} 
+        class="card" 
+    {% endif %}
+{% endblock card %}
+
+{% block link %}
+    {% url 'tasks:all_tasks_query' 'all' %}
+{% endblock link %}
+
+{% block icon %}
+    {% if 'all/' in request.path %}
+        <i class="fas fa-list fa-4x text-light"></i>
+    {% else %}
+        <i class="fas fa-list fa-4x text-dark"></i>
+    {% endif %}
+{% endblock icon %}
+
+{% block value %}
+    {% if 'all/' in request.path %}
+        <div id="totalall" class="text-light">{{total_all}}</div>
+    {% else %}
+        <div id="totalall" class="text-dark">{{total_all}}</div>
+    {% endif %}
+{% endblock value %}
+
+{% block dash-title %}
+    {% if 'all/' in request.path %}
+        <div class="text-light">TOTAL</div>
+    {% else %}
+        <div class="text-dark">TOTAL</div>
+    {% endif %}
+{% endblock dash-title %}

@@ -1,0 +1,64 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="htmx-config" content='{"includeIndicatorStyles": false}'>
+
+    {% block extra_css %}
+    {% endblock extra_css %}
+    
+    <title>{% block title %}Task manager{% endblock title %}</title>
+    {% include 'css.html' %}
+
+
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;"></div>
+
+  </head>
+  <body>
+    {% include 'partials/navbar.html' %}
+    {#% include "partials/messages.html" %#}
+    {% include "partials/message-sweet-alerts.html" %}
+    <!-- Background Image Section -->
+        {% block background-image %}
+        <style>
+            body {
+                background: url({% static "home-page/background-green" %});
+                background-position: center 0px;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-size: cover;
+            }
+        </style>
+        {% endblock background-image %}
+
+    <main class="container-fluid mt-5">
+      {% block content %}
+      {% endblock content %}
+    </main>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+      <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasRightLabel">Menu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+          <div class="d-grid gap-2">
+              {% block sidebar-content %}
+              {% endblock sidebar-content %}
+              <hr><br>
+              <center class="mt-5">
+                  <i class="bx bx-task align-middle bx-lg" style="color: #94cdbe; font-size: 24px; margin-left: 20px;"></i>&nbsp;<span class="align-middle fs-3">Bookstop</span>
+              </center>
+          </div>
+      </div>
+    </div>
+
+    {% include 'partials/footer.html' %}
+    
+    {% include 'js.html' %}
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

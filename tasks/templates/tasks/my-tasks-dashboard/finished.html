@@ -1,0 +1,9 @@
+{% extends 'tasks/my-tasks-dashboard/base-dash.html' %}
+{% block card %}{% if 'finished/' in request.path %} class="card bg-info" {% else %} class="card" {% endif %}{% endblock card %}
+{% block link %}{% url 'tasks:my_tasks_query' 'finished' %}{% endblock link %}
+{% block icon %}
+    <i class="fa-solid fa-check-circle fa-3x {% if 'finished/' in request.path %}text-light{% else %}text-success{% endif %}"></i>
+{% endblock icon %}
+{% block value %}{% if 'finished/' in request.path %}<div id="finished" class="text-light">{{finished_count}}</div>{% else %}<div id="finished" class="text-success">{{finished_count}}</div>{% endif %}{% endblock value %}
+{% block dash-title %}{% if 'finished/' in request.path %}<div class="text-light">Finished</div>{% else %}<div class="text-success">Finished</div>{% endif %}{% endblock dash-title %}
+

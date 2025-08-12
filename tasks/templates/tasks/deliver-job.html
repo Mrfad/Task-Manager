@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block title %}Change Rate{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card {
+    border-radius: 10px;
+  }
+  .card-header {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+</style>
+{% endblock extra_css %}
+
+{% block background-image %}
+{% endblock background-image %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white d-flex align-items-center">
+          <i class="fa-solid fa-dollar-sign fa-lg me-2"></i>
+          <h5 class="mb-0">Deliver</h5>
+        </div>
+
+        <div class="card-body">
+          <form method="POST" novalidate>
+            {% csrf_token %}
+            {{ form|crispy }}
+
+            <div class="d-grid gap-2 mt-4">
+              <button type="submit" name="changeRate" class="btn btn-success">
+                Save
+              </button>
+              <a href="{% url 'tasks:task_detail' task.id %}" class="btn btn-outline-secondary">
+                ← Back to Task Detail
+              </a>
+            </div>
+          </form>
+        </div>
+
+        <div class="card-footer text-muted text-center small">
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% load crispy_forms_tags %}
+<div class="modal fade" id="addPhoneModal" tabindex="-1" aria-labelledby="addPhoneModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="addPhoneModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'customers:add_phone' %}" method="POST" class="was-validated">
+        <input type="hidden" name="customer" value="{{customer.customer_id}}">
+        {% csrf_token %}
+        {{form|crispy}}
+
+        <button type="submit" name="add_phone">Save</button>
+      </form>
+      </div>
+    </div>
+  </div>
+</div>

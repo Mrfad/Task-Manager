@@ -1,0 +1,37 @@
+{% extends 'tasks/all-tasks-dashboard/base-dash.html' %}
+
+{% block card %}
+    {% if 'today/' in request.path %}
+        class="card bg-info" 
+    {% else %} 
+        class="card" 
+    {% endif %}
+{% endblock card %}
+
+{% block link %}
+    {% url 'tasks:all_tasks_query' 'today' %}
+{% endblock link %}
+
+{% block icon %}
+    {% if 'today/' in request.path %}
+        <i class="fas fa-bell fa-4x text-light"></i>
+    {% else %}
+        <i class="fas fa-bell fa-4x text-primary"></i>
+    {% endif %}
+{% endblock icon %}
+
+{% block value %}
+    {% if 'today/' in request.path %}
+        <div id="newall" class="text-light">{{new_all}}</div>
+    {% else %}
+        <div id="newall" class="text-primary">{{new_all}}</div>
+    {% endif %}
+{% endblock value %}
+
+{% block dash-title %}
+    {% if 'today/' in request.path %}
+        <div class="text-light">Today</div>
+    {% else %}
+        <div class="text-primary">Today</div>
+    {% endif %}
+{% endblock dash-title %}

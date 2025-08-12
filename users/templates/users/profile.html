@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if is_own_profile %}
+                            {% trans "My Profile" %}
+                        {% else %}
+                            {{ profile_user.get_full_name|default:profile_user.username }}'s Profile
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            {% if profile.profile_picture %}
+                                <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px; max-height: 150px;">
+                            {% else %}
+                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                                    <i class="bi bi-person-fill" style="font-size: 5rem;"></i>
+                                </div>
+                            {% endif %}
+
+                            {% if is_own_profile %}
+                                <a href="{% url 'users:profile_edit' %}" class="btn btn-outline-primary">
+                                    <i class="fa-solid fa-pencil"></i> {% trans "Edit Profile" %}
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="card-title">{% trans "Account Information" %}</h5>
+                            <table class="table">
+                                <tr>
+                                    <th style="width: 30%;">{% trans "Email" %}</th>
+                                    <td>{{ profile_user.email }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Name" %}</th>
+                                    <td>{{ profile_user.get_full_name|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Date Joined" %}</th>
+                                    <td>{{ profile_user.date_joined|date:"F j, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Completed Jobs" %}</th>
+                                    <td>{{ completed_jobs }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "In Progress Jobs" %}</th>
+                                    <td>{{ in_progress_jobs }}</td>
+                                </tr>
+                            </table>
+
+                            <h5 class="card-title mt-4">{% trans "Profile Information" %}</h5>
+                            <table class="table">
+                                <tr>
+                                    <th>{% trans "Bio" %}</th>
+                                    <td>{{ profile.bio|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Phone Number" %}</th>
+                                    <td>{{ profile.mobile|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Address" %}</th>
+                                    <td>{{ profile.address|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

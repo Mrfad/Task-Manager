@@ -1,0 +1,55 @@
+{% load humanize %}
+
+<div class="row">
+    {% if task.canceled %}
+        <div class="col-12">
+        <div class="info-box bg-warning rounded-2">
+            <div class="info-box-content">
+            <span class="text-danger text-center fs-3"><b>Cancelled</b></span>
+            </div>
+        </div>
+        </div>
+    {% else %}
+        <div class="col-12 col-sm-4">
+        <div class="info-box bg-success rounded-2">
+            <div class="info-box-content">
+            <span class="info-box-text text-center">Job Amount</span>
+            <span class="info-box-number text-center mb-0">{{ task.currency }} {{ task.final_price|intcomma }}</span>
+            </div>
+        </div>
+        </div>
+
+        <div class="col-12 col-sm-4">
+        {% if task.is_fully_paid %}
+            <div class="info-box bg-success rounded-2">
+        {% elif not task.is_fully_paid %}
+            <div class="info-box bg-warning rounded-2">
+        {% else %}
+            <div class="info-box bg-primary rounded-2">
+        {% endif %}
+            <div class="info-box-content rounded-2">
+                <span class="info-box-text text-center">Paid Amount</span>
+                <span class="info-box-number text-center mb-0">{{ task.currency }} {{ task.total_paid_amount|intcomma }}</span>
+            </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-4">
+        {% if task.is_fully_paid %}
+            <div class="info-box bg-success rounded-2">
+        {% elif not task.is_fully_paid %}
+            <div class="info-box bg-warning rounded-2">
+        {% else %}
+            <div class="info-box bg-primary rounded-2">
+        {% endif %}
+            <div class="info-box-content rounded-2">
+                <span class="info-box-text text-center">Remaining Amount</span>
+                <span class="info-box-number text-center mb-0">{{ task.currency }} {{ task.remaining_amount|intcomma }}</span>
+            </div>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+
+

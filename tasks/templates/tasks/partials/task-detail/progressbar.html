@@ -1,0 +1,50 @@
+{% load progressbar_tags %}
+
+<style>
+.half-check-icon {
+    position: relative;
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+}
+
+.full-check {
+    color: #ffc107; /* Yellow check for visible part */
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.masked-check {
+    color: #dee2e6; /* Gray for the muted side */
+    position: absolute;
+    top: 0;
+    left: 0;
+    clip-path: inset(0 50% 0 0); /* Hide left half */
+}
+</style>
+
+<div class="progress-container">
+    <div class="progress-bar-fill" style="width: {{ fill_percentage }}%;"></div>
+
+    {% for step in steps %}
+        <div class="progress-step {% if forloop.counter0 == step_index %}active{% elif forloop.counter0 < step_index %}completed{% endif %}"
+            data-bs-toggle="tooltip" title="{{ step_titles|dict_get:step }}">
+            <div class="circle">
+                {% if forloop.counter0 < step_index %}
+                    <i class="fas fa-check"></i>
+                {% elif forloop.counter0 == step_index %}
+                    {% if step in 'done closed delivered' %}
+                        <i class="fas fa-check"></i>
+                    {% else %}
+                        <i class="fas fa-hourglass-half"></i>
+                    {% endif %}
+                {% else %}
+                    {{ forloop.counter }}
+                {% endif %}
+            </div>
+            <div class="label">{{ step|replace:"_, " }}</div>
+        </div>
+    {% endfor %}
+
+</div>

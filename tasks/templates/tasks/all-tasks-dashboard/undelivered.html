@@ -1,0 +1,37 @@
+{% extends 'tasks/all-tasks-dashboard/base-dash.html' %}
+
+{% block card %}
+    {% if 'undelivered/' in request.path %} 
+        class="card bg-warning" 
+    {% else %} 
+        class="card" 
+    {% endif %}
+{% endblock card %}
+
+{% block link %}
+    {% url 'tasks:all_tasks_query' 'undelivered' %}
+{% endblock link %}
+
+{% block icon %}
+    {% if 'undelivered/' in request.path %}
+        <i class="fa-solid fa-4x text-light fa-truck"></i>
+    {% else %}
+        <i class="fa-solid fa-4x text-warning fa-truck"></i>
+    {% endif %}
+{% endblock icon %}
+
+{% block value %}
+    {% if 'undelivered/' in request.path %}
+        <div class="text-light" id="undeliveredJobsall">{{undelivered_count_all}}</div>
+    {% else %}
+        <div class="text-warning" id="undeliveredJobsall">{{undelivered_count_all}}</div>
+    {% endif %}
+{% endblock value %}
+
+{% block dash-title %}
+    {% if 'undelivered/' in request.path %}
+        <div class="text-light">Pending</div>
+    {% else %}
+        <div class="text-warning">Pending</div>
+    {% endif %}
+{% endblock dash-title %}

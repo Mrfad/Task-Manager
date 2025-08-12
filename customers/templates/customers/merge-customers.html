@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Edit {{customer.customer_name|title}}{% endblock title %}
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+{% block background-image %}
+{% endblock background-image %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Merge Duplicate Customers</h2>
+
+    <div class="alert alert-info">
+      Search for similar customer names, select the ones to merge, then choose the <strong>Primary</strong> customer who will keep the data.
+    </div>
+
+    <form method="post" id="merge-form">
+    {% csrf_token %}
+
+    <div class="form-group mb-4">
+      <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search customer by name or phone...">
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-body p-0" id="customerList">
+        {% for customer in customers %}
+        <div class="row align-items-center g-0 py-2 px-3 border-bottom customer-entry"
+            style="display: flex;"
+            data-name="{{ customer.customer_name|lower }}"
+            data-phone="{{ customer.customer_phone|default:'' }}">
+
+          <!-- Left: Checkbox -->
+          <div class="col-1 text-center d-flex align-items-center justify-content-center">
+            <input type="checkbox"
+                  name="merge_ids"
+                  class="form-check-input merge-checkbox"
+                  id="merge-{{ customer.customer_id }}"
+                  value="{{ customer.customer_id }}">
+          </div>
+
+          <!-- Center: Customer Info -->
+          <div class="col-10">
+            <label for="merge-{{ customer.customer_id }}" class="form-label mb-0 d-block w-100">
+              <a href="{% url 'customers:customer_detail' customer.pk %}" class="fw-bold text-decoration-none">
+                {{ customer.customer_name }}
+              </a> — {{ customer.customer_phone }} (ID: {{ customer.customer_id }})
+              {% if customer.company %}
+                <br><small class="text-muted">🏢 {{ customer.company }}</small>
+              {% endif %}
+            </label>
+          </div>
+
+          <!-- Right: Radio Primary -->
+          <div class="col-1 text-end d-flex align-items-center justify-content-end">
+            <input type="radio"
+                  name="primary_id"
+                  class="form-check-input primary-radio"
+                  value="{{ customer.customer_id }}"
+                  id="primary-{{ customer.customer_id }}">
+            <label for="primary-{{ customer.customer_id }}" class="form-check-label ms-2 small">Primary</label>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-text text-muted mb-3">
+      ✅ Check the customers you want to merge. Mark one of them as primary using the right-side radio.
+    </div>
+
+    <button type="submit" class="btn btn-success">🔁 Merge Selected Customers</button>
+  </form>
+
+
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('searchInput').addEventListener('input', function () {
+    const search = this.value.toLowerCase();
+    document.querySelectorAll('.customer-entry').forEach(function (entry) {
+      const name = entry.dataset.name;
+      const phone = entry.dataset.phone;
+      if (name.includes(search) || phone.includes(search)) {
+        entry.style.display = 'flex';  // ✅ Keep Bootstrap layout intact
+      } else {
+        entry.style.display = 'none';
+      }
+    });
+  });
+</script>
+{% endblock %}

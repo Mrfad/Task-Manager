@@ -1,0 +1,56 @@
+{% load dict_filters %}
+<div id="email-sidebar" class="bg-light p-3 border-end">
+  <div class="accordion" id="emailAccordion">
+    {% for mailbox in user_mailboxes %}
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading{{ mailbox.id }}">
+          <button class="accordion-button {% if selected_mailbox.id != mailbox.id %}collapsed{% endif %}" 
+                  type="button"
+                  data-bs-toggle="collapse" 
+                  data-bs-target="#collapse{{ mailbox.id }}"
+                  aria-expanded="{% if selected_mailbox.id == mailbox.id %}true{% else %}false{% endif %}"
+                  aria-controls="collapse{{ mailbox.id }}">
+            {{ mailbox.name }}
+          </button>
+        </h2>
+        <div id="collapse{{ mailbox.id }}" 
+             class="accordion-collapse collapse {% if selected_mailbox.id == mailbox.id %}show{% endif %}"
+             aria-labelledby="heading{{ mailbox.id }}" 
+             data-bs-parent="#emailAccordion">
+          <div class="accordion-body p-0">
+            <ul class="list-group list-group-flush">
+              {% for folder_name in mailbox_folders|dict_key:mailbox.id %}
+                {% with folder_lower=folder_name|lower %}
+                  <li class="list-group-item {% if selected_mailbox.id == mailbox.id and folder == folder_name %}active{% endif %}">
+                    <a href="{% url 'mail:inbox' %}?mailbox={{ mailbox.id }}&folder={{ folder_name|urlencode }}"
+                       class="text-decoration-none {% if selected_mailbox.id == mailbox.id and folder == folder_name %}text-white{% endif %}">
+                      
+                      {#— Choose icon based on folder name —#}
+                      {% if folder_lower == 'inbox' %}
+                        <i class="fa-solid fa-inbox me-1"></i>
+                      {% elif 'sent' in folder_lower %}
+                        <i class="fa-solid fa-paper-plane me-1"></i>
+                      {% elif 'draft' in folder_lower %}
+                        <i class="fa-solid fa-file-lines me-1"></i>
+                      {% elif 'trash' in folder_lower or 'deleted' in folder_lower %}
+                        <i class="fa-solid fa-trash me-1"></i>
+                      {% else %}
+                        <i class="fa-solid fa-folder me-1"></i>
+                      {% endif %}
+
+                      {{ folder_name|title }}
+                    </a>
+                  </li>
+                {% endwith %}
+              {% empty %}
+                <li class="list-group-item text-muted">No folders</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="text-muted p-3">No mailboxes linked.</div>
+    {% endfor %}
+  </div>
+</div>

@@ -1,0 +1,234 @@
+{% load active_link %}
+{% load group_check %}
+
+<nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark" data-bs-theme="dark">
+    <div class="container-fluid">
+        <a href="#" class="navbar-brand" style="color: #fff; margin-left: 25px;">
+            <i class="bx bx-task align-middle" style="color: #94cdbe; font-size: 24px;"></i>
+            <span class="align-middle">{{ nav_title|default:"Bookstop" }}</span>
+        </a>
+
+        <!-- Improved navbar toggler button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar content - will be collapsed by default on mobile -->
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <!-- Your existing menu items here -->
+                {% if request.user|in_group:"Developer|ManagerAssistant|FrontDesk|Managers|Graphics" %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% active_dropdown 'tasks:all_tasks' 'tasks:my_tasks' 'tasks:add_task' 'tasks:add_project' 'tasks:projects' %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Tasks
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item {% active_link 'tasks:all_tasks' %}" href="{% url 'tasks:all_tasks' %}">All Tasks</a></li>
+                        <li><a class="dropdown-item {% active_link 'tasks:my_tasks' %}" href="{% url 'tasks:my_tasks' %}">My Tasks</a></li>
+                        <li><a class="dropdown-item {% active_link 'tasks:add_task' %}" href="{% url 'tasks:add_task' %}">Add Task</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item {% active_link 'tasks:add_project' %}" href="{% url 'tasks:add_project' %}">Add Project</a></li>
+                        <li><a class="dropdown-item {% active_link 'tasks:projects' %}" href="{% url 'tasks:projects' %}">All projects</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                {# POS: Developer and Cashier and Managers #}
+                {% if request.user|in_group:"Developer|Cashier|Managers" %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% active_dropdown 'payments:unpaid_jobs' 'payments:paid_jobs' 'tasks:change_rate' %}" href="#" role="button" data-bs-toggle="dropdown">
+                        POS
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item {% active_link 'payments:unpaid_jobs' %}" href="{% url 'payments:unpaid_jobs' %}">Unpaid</a></li>
+                        <li><a class="dropdown-item {% active_link 'payments:paid_jobs' %}" href="{% url 'payments:paid_jobs' %}">Paid</a></li>
+                        <li><a class="dropdown-item {% active_link 'tasks:change_rate' %}" href="{% url 'tasks:change_rate' %}">Change Rate</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                {# Customers: Developer and Graphics and Cashier and Managers #}
+                {% if request.user|in_group:"Developer|Graphics|Cashier|FrontDesk|Managers" %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% active_dropdown 'customers:customers_list' 'customers:add_customer' 'customers:merge_customer' %}" href="#" role="button" data-bs-toggle="dropdown">
+                        Customers
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item {% active_link 'customers:customers_list' %}" href="{% url 'customers:customers_list' %}">All Customers</a></li>
+                        <li><a class="dropdown-item {% active_link 'customers:add_customer' %}" href="{% url 'customers:add_customer' %}">Add Customers</a></li>
+                        <li><a class="dropdown-item {% active_link 'customers:merge_customer' %}" href="{% url 'customers:merge_customers' %}">Merge Customers</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                {# Stats: Developer and Manager #}
+                {% if request.user|in_group:"Developer|Managers" %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% active_dropdown 'tasks:stats' %}" href="#" role="button" data-bs-toggle="dropdown">
+                        Statistics
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item {% active_link 'tasks:stats' %}" href="{% url 'tasks:stats' %}">Statistics</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                {% if user_mailboxes %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% active_dropdown 'mail:inbox' 'mail:send_email' %}" href="#" role="button" data-bs-toggle="dropdown">
+                        Mailbox
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item {% active_link 'mail:inbox' %}" href="{% url 'mail:inbox' %}">Inbox</a></li>
+                        <li><a class="dropdown-item {% active_link 'mail:send_email' %}" href="{% url 'mail:send_email' %}">New Mail</a></li>
+
+                    </ul>
+                </li>
+                {% endif %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% active_dropdown 'helpcenter:home' %}" href="#" role="button" data-bs-toggle="dropdown">
+                        Help
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item {% active_link 'helpcenter:home' %}" href="{% url 'helpcenter:home' %}">Help Center</a></li>
+
+                    </ul>
+                </li>
+
+                <li>{% include 'clock.html' %}</li>
+
+                ul>
+                </li>
+            </ul>
+
+            <!-- Right side notification + offcanvas -->
+            <ul class="navbar-nav mb-2 mb-lg-0">
+                
+                <!-- 🔔 Task Notifications -->
+                <li class="nav-item dropdown me-3">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bx bx-bell"></i>
+                        <span id="notification-badge" class="badge bg-danger {% if notification_unread_count == 0 %}d-none{% endif %}">
+                            {{ notification_unread_count }}
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" id="notification-dropdown" style="min-width: 300px; max-width: 400px; word-wrap: break-word;">
+                        {% if notifications %}
+                            {% for note in notifications %}
+                                {% if note.task %}
+                                    <li> 
+                                        <a class="dropdown-item text-wrap" href="{% url 'tasks:task_detail' note.task.id %}">
+                                            🔔 {{ note.message|truncatechars:60 }}
+                                            <br><small class="text-muted">{{ note.created_at }}</small>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="dropdown-item text-wrap">{{ note.message|truncatechars:60 }}</li>
+                                {% endif %}
+                            {% endfor %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="text-center">
+                               <button id="clear-notifications-btn"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-url="{% url 'tasks:clear_task_notifications' %}">
+                                    Clear All
+                                </button>
+
+                            </li>
+                        {% else %}
+                            <li class="dropdown-item text-wrap">No new notifications</li>
+                        {% endif %}
+                    </ul>
+                </li>
+
+                <!-- 💸 Payment Notifications -->
+                <li class="nav-item dropdown me-3">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span id="payment-notification-badge" class="badge bg-success {% if payment_unread_count == 0 %}d-none{% endif %}">
+                            {{ payment_unread_count }}
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" id="payment-notification-dropdown" style="min-width: 300px; max-width: 400px; word-wrap: break-word;">
+                        {% if payment_notifications %}
+                            {% for note in payment_notifications %}
+                                <li>
+                                    <a class="dropdown-item text-wrap" href="{% url 'tasks:task_detail' note.task.id %}">
+                                        💰 {{ note.message|truncatechars:60 }}
+                                        <br><small class="text-muted">{{ note.created_at }}</small>
+                                    </a>
+                                </li>
+                            {% endfor %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="text-center">
+                                <button id="clear-payment-notifications-btn"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-url="{% url 'tasks:clear_payment_notifications' %}">
+                                    Clear All
+                                </button>
+                            </li>
+                        {% else %}
+                            <li class="dropdown-item text-wrap">No new payment notifications</li>
+                        {% endif %}
+                    </ul>
+                </li>
+
+                <!-- Offcanvas button -->
+                <li class="nav-item">
+                    <button class="btn nav-link" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</nav>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const csrfToken = '{{ csrf_token }}';
+
+    const clearTaskBtn = document.getElementById('clear-notifications-btn');
+    if (clearTaskBtn) {
+        clearTaskBtn.addEventListener('click', function () {
+            fetch("{% url 'tasks:clear_task_notifications' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('notification-dropdown').innerHTML =
+                        '<li class="dropdown-item text-wrap">No new notifications</li>';
+                    document.getElementById('notification-badge').classList.add('d-none');
+                }
+            });
+        });
+    }
+
+    const clearPaymentBtn = document.getElementById('clear-payment-notifications-btn');
+    if (clearPaymentBtn) {
+        clearPaymentBtn.addEventListener('click', function () {
+            fetch("{% url 'tasks:clear_payment_notifications' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('payment-notification-dropdown').innerHTML =
+                        '<li class="dropdown-item text-wrap">No new payment notifications</li>';
+                    document.getElementById('payment-notification-badge').classList.add('d-none');
+                }
+            });
+        });
+    }
+});
+</script>

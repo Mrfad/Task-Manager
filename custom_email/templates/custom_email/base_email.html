@@ -1,0 +1,122 @@
+{# templates/custom_email/base_email.html #}
+{% extends 'base.html' %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+  .email-layout {
+    display: flex;
+    min-height: 80vh;
+  }
+
+  #email-sidebar {
+    width: 250px;
+    transition: width 0.3s ease, margin-left 0.3s ease;
+    overflow: hidden;
+  }
+
+  #email-sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    border: none;
+    overflow: hidden;
+  }
+
+  .email-main {
+    flex-grow: 1;
+    transition: margin-left 0.3s ease;
+  }
+
+  .toggle-sidebar-btn {
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 767.98px) {
+    .email-layout {
+      flex-direction: column; /* Stack sidebar and main content */
+    }
+    #email-sidebar {
+      width: 100%; /* Full width on mobile */
+      overflow: visible; /* Ensure content is not hidden */
+      transition: none; /* No transition on mobile */
+      margin-left: 0 !important; /* Override any JS-applied margin */
+    }
+    #email-sidebar.collapsed { /* This class won't be used on mobile */
+      width: 100%;
+      padding: inherit;
+      border: inherit;
+      overflow: visible;
+    }
+    .email-main {
+      margin-left: 0 !important; /* No margin on mobile */
+    }
+    .toggle-sidebar-btn {
+      display: none; /* Hide toggle button on mobile */
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="email-layout">
+  <!-- Sidebar -->
+  <div id="email-sidebar" class="bg-light p-3 border-end">
+    {% include 'custom_email/partials/email-sidebar.html' %}
+  </div>
+
+  <!-- Main Content -->
+  <div class="email-main p-3">
+    <!-- Toggle Button inside email-main -->
+    <button id="sidebarToggleBtn" class="btn btn-outline-secondary toggle-sidebar-btn">
+      <i id="sidebarToggleIcon" class="fa-solid fa-chevron-left"></i>
+    </button>
+    {% block email_content %}{% endblock %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
+    const emailSidebar = document.getElementById('email-sidebar');
+    const icon = document.getElementById('sidebarToggleIcon');
+    const mainSidebar = document.getElementById('sidebar');
+
+    function adjustEmailSidebarMargin() {
+      if (window.innerWidth > 768 && mainSidebar.classList.contains('active')) {
+        emailSidebar.style.marginLeft = '250px';
+      } else {
+        emailSidebar.style.marginLeft = '0';
+      }
+    }
+
+    // Only apply toggle logic on desktop
+    if (window.innerWidth > 768) {
+      toggleBtn.addEventListener('click', function () {
+        emailSidebar.classList.toggle('collapsed');
+
+        if (emailSidebar.classList.contains('collapsed')) {
+          icon.classList.remove('fa-chevron-left');
+          icon.classList.add('fa-chevron-right');
+        } else {
+          icon.classList.remove('fa-chevron-right');
+          icon.classList.add('fa-chevron-left');
+        }
+      });
+
+      // Adjust margin on page load
+      adjustEmailSidebarMargin();
+
+      // Adjust margin when main sidebar is toggled
+      const mainSidebarToggleButton = document.querySelector('[data-bs-target="#sidebar"]');
+      if(mainSidebarToggleButton) {
+          mainSidebarToggleButton.addEventListener('click', function(){
+              setTimeout(adjustEmailSidebarMargin, 350); // Wait for transition to finish
+          });
+      }
+    }
+  });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

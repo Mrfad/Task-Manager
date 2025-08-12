@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{#% load crispy_forms_tags %#}
+{% load humanize %}
+{% load group_check %}
+{% load tz %}
+{% block title %}Task manager | All Tasks{% endblock title %}
+
+{% block background-image %}
+{% endblock background-image %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+
+{% block extra_css %}
+<style>
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: white !important;
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+
+<!-- 🔙 Smart Back Button -->
+
+<div class="card shadow p-5 mt-5">
+    <div class="d-flex align-items-center mb-3">
+      <a href="{% url 'tasks:my_tasks' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2 shadow-sm" style="border-radius: 50px;">
+        <i class="fas fa-arrow-left"></i>
+        <span class="fw-semibold">Back</span>
+      </a>
+    </div>
+  <h3 class="mb-4">Projects</h3>
+  <div class="table-responsive">
+  <table id="projectsTable" class="table table-bordered table-striped table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>Project#</th>
+        <th>Name</th>
+        <th>Customer</th>
+        <th>Balance</th>
+        <th>Spent</th>
+        <th>Currency</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in projects %}
+      <tr>
+        <td>{{ project.project_number }}</td>
+        <td>{{ project.name }}</td>
+        <td>{{ project.customer.customer_name }}</td>
+        <td>{{ project.balance|floatformat:2|intcomma }}</td>
+        <td>{{ project.spent|floatformat:2|intcomma }}</td>
+        <td>{{ project.currency }}</td>
+        <td>{{ project.created_at|date:"M d, Y H:i" }}</td>
+        <td>
+          <a href="{% url 'tasks:project_detail' project.pk %}" class="btn btn-sm btn-primary">View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+<!-- jQuery + DataTables -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#projectsTable').DataTable({
+            "order": [[ 0, "asc" ]],
+            "pageLength": 10,
+            "responsive": true
+        });
+    });
+</script>
+{% endblock extra_js %}

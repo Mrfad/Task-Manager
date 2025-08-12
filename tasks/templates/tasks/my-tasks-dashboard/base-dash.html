@@ -1,0 +1,17 @@
+<div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 mb-3">
+    <a href="{% block link %}#{% endblock link %}">
+        <div {% block card %} class="card h-100" {% endblock card %}>
+            <div class="card-body">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
+                    <div class="align-self-center mb-2 mb-sm-0">
+                        {% block icon %}{% endblock icon %}
+                    </div>
+                    <div class="text-center text-sm-end">
+                        <h5 class="mb-0">{% block value %}{% endblock value %}</h5>
+                        <p class="text-muted">{% block dash-title %}{% endblock dash-title %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+</div>

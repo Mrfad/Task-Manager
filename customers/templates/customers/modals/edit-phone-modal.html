@@ -1,0 +1,41 @@
+{% load widget_tweaks %}
+{% load customer_tags %}
+
+<div class="modal fade" id="editPhoneModal{{ phone.id }}" tabindex="-1" aria-labelledby="editPhoneModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 rounded-4 shadow-sm">
+      <div class="modal-header bg-warning text-dark rounded-top">
+        <h5 class="modal-title" id="editPhoneModalLabel">
+          <i class="fas fa-pen me-1"></i> Edit Phone
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      {% with phone_forms|dict_get:phone.id as form %}
+        <form method="POST" action="{% url 'customers:edit_phone' phone.id %}">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Phone Name</label>
+              {{ form.name|add_class:"form-control form-control-sm" }}
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Country Code</label>
+              {{ form.country_code|add_class:"form-select form-select-sm" }}
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone Number</label>
+              {{ form.customer_phone|add_class:"form-control form-control-sm" }}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success btn-sm">
+              <i class="fas fa-save me-1"></i> Save
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      {% endwith %}
+    </div>
+  </div>
+</div>

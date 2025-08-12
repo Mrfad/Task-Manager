@@ -1,0 +1,97 @@
+{% load crispy_forms_tags %}
+<!-- templates/tasks/modals/close-task-modal.html -->
+<div class="modal fade" id="closeTaskModal" tabindex="-1" aria-labelledby="closeTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-sm rounded-4">
+            <div class="modal-header bg-primary text-white rounded-top">
+                <h5 class="modal-title" id="closeTaskModalLabel">
+                    <i class="fas fa-user-plus me-2"></i>Close Task {{task.task_name}}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <h4 class="bg-warning">Are you sure you want to close {{task.task_name}} Job</h4>
+                <form id="closeTaskForm" method="post" action="{% url 'tasks:close_task_modal' task.id %}" class="was-validated">
+                    {% csrf_token %} 
+                    {{close_task_form|crispy}}               
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="submitCloseTask" class="btn btn-primary">
+                            Submit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if close_task_form.errors %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = new bootstrap.Modal(document.getElementById('closeTaskModal'));
+        modal.show();
+
+        // Optional: Show user-friendly alert (SweetAlert or Bootstrap alert)
+        Swal.fire({
+            icon: 'error',
+            title: 'Incomplete Form',
+            text: 'Please select a final location or enter a custom one.',
+        });
+    });
+</script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const closeTaskForm = document.getElementById("closeTaskForm");
+    if (!closeTaskForm) return; // don't run if this form doesn't exist
+
+    const finalField = document.getElementById("id_final_location");
+    const otherField = document.getElementById("id_other_location");
+    const closebutton = document.getElementById("submitCloseTask");
+
+    // Disable the button initially if both are empty
+    const updateButtonState = () => {
+        const isDisabled = !finalField.value && !otherField.value;
+        closebutton.disabled = isDisabled;
+    };
+
+    updateButtonState(); // Initial state
+
+    finalField.addEventListener("input", updateButtonState);
+    otherField.addEventListener("input", updateButtonState);
+
+    closeTaskForm.addEventListener("submit", function (e) {
+        if (!finalField.value && !otherField.value) {
+            e.preventDefault();
+            alert("You must select a final location or enter a custom one.");
+            finalField.classList.add("is-invalid");
+            otherField.classList.add("is-invalid");
+        } else {
+            finalField.classList.remove("is-invalid");
+            otherField.classList.remove("is-invalid");
+        }
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const finalLocationSelect = document.getElementById("id_final_location");
+    const otherLocationInput = document.getElementById("id_other_location");
+
+    function toggleOtherField() {
+        if (finalLocationSelect.value) {
+            otherLocationInput.disabled = true;
+            otherLocationInput.value = "";
+        } else {
+            otherLocationInput.disabled = false;
+        }
+    }
+
+    finalLocationSelect.addEventListener("change", toggleOtherField);
+    toggleOtherField();  // call on load
+});
+</script>

@@ -1,0 +1,18 @@
+{% load static %}
+{% if messages %}
+  {% for message in messages %}
+    {% if message.tags == 'alert-success' or message.tags == 'success' %}
+      <script src="{% static 'js/sweetalert.min.js' %}"></script>
+      <script>
+        var m = "{{ message|escapejs }}";
+        swal("", m, "success");
+      </script>
+    {% elif message.tags == 'error' or message.tags == 'alert-danger' %}
+      <script src="{% static 'js/sweetalert.min.js' %}"></script>
+      <script>
+        var m = "{{ message|escapejs }}";
+        swal("Error!", m, "error");
+      </script>
+    {% endif %}
+  {% endfor %}
+{% endif %}

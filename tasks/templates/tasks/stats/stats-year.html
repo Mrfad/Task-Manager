@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load group_check %}
+
+{% block extra_css %}
+{% include 'partials/statscss.html' %}
+{% endblock extra_css %}
+
+{% block title %}Task manager | Statistics{% endblock %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block background-image %}{% endblock background-image %}
+
+{% block content %}
+{% if request.user|in_group:"Developer|Managers" %}
+<div class="container-fluid mt-4">
+    <h3 class="text-center fw-bold text-dark mb-4">Year {{ year_number }} Summary</h3>
+
+    {% include 'tasks/stats/dropdowns.html' %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5 class="card-title text-center">Total USD by User</h5>
+                <canvas id="myChartusd"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5 class="card-title text-center">Total LBP by User</h5>
+                <canvas id="myChartlbp"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5 class="card-title text-center">USD per Month</h5>
+                <canvas id="yearMonthChartUSD"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5 class="card-title text-center">LBP per Month</h5>
+                <canvas id="yearMonthChartLBP"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+    <h1 class="text-center text-danger">You are not allowed to view this page!!</h1>
+{% endif %}
+{% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'js/chart.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    function generateColors(count) {
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            colors.push(getRandomColor());
+        }
+        return colors;
+    }
+
+    const ctxUsd = document.getElementById('myChartusd');
+    const ctxLbp = document.getElementById('myChartlbp');
+    const monthsUsd = document.getElementById('yearMonthChartUSD');
+    const monthsLbp = document.getElementById('yearMonthChartLBP');
+
+    const usdLabels = [{% for stat in user_statsusd %}'{{ stat.user.username|escapejs }}',{% endfor %}];
+    const usdData = [{% for stat in user_statsusd %}{{ stat.final_price|floatformat:2 }},{% endfor %}];
+    const usdColors = [{% for color in usd_colors %}'{{ color }}',{% endfor %}];
+
+    const lbpLabels = [{% for stat in user_statslbp %}'{{ stat.user.username|escapejs }}',{% endfor %}];
+    const lbpData = [{% for stat in user_statslbp %}{{ stat.final_price|floatformat:2 }},{% endfor %}];
+    const lbpColors = [{% for color in lbp_colors %}'{{ color }}',{% endfor %}];
+
+    const monthUsdLabels = [{% for month in month_statsusd %}'{{ month.month }}',{% endfor %}];
+    const monthUsdData = [{% for month in month_statsusd %}{{ month.Amount|floatformat:2 }},{% endfor %}];
+
+    const monthLbpLabels = [{% for month in month_statslbp %}'{{ month.month }}',{% endfor %}];
+    const monthLbpData = [{% for month in month_statslbp %}{{ month.Amount|floatformat:2 }},{% endfor %}];
+
+    if (ctxUsd) {
+        new Chart(ctxUsd, {
+            type: 'bar',
+            data: {
+                labels: usdLabels,
+                datasets: [{
+                    label: 'USD',
+                    data: usdData,
+                    backgroundColor: usdColors,
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    if (ctxLbp) {
+        new Chart(ctxLbp, {
+            type: 'bar',
+            data: {
+                labels: lbpLabels,
+                datasets: [{
+                    label: 'LBP',
+                    data: lbpData,
+                    backgroundColor: lbpColors,
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    if (monthsUsd) {
+        new Chart(monthsUsd, {
+            type: 'bar',
+            data: {
+                labels: monthUsdLabels,
+                datasets: [{
+                    label: '{{ year_number }} USD',
+                    data: monthUsdData,
+                    backgroundColor: generateColors(monthUsdLabels.length),
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    if (monthsLbp) {
+        new Chart(monthsLbp, {
+            type: 'bar',
+            data: {
+                labels: monthLbpLabels,
+                datasets: [{
+                    label: '{{ year_number }} LBP',
+                    data: monthLbpData,
+                    backgroundColor: generateColors(monthLbpLabels.length),
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+    }
+});
+</script>
+{% endblock extra_js %}

@@ -1,0 +1,13 @@
+<div class="card-header bg-primary text-white d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 py-2">
+    <h5 class="mb-0 d-none d-md-block">All Tasks</h5>  <!-- Hidden on mobile, visible on md and up -->
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <a href="{% url 'tasks:projects' %}" class="btn btn-success btn-sm pulse-button">
+            <i class="fas fa-project-diagram me-1"></i>
+            <span>All Projects</span>
+        </a>
+        <a href="{% url 'tasks:add_task' %}" class="btn btn-success btn-sm pulse-button">
+            <i class="fas fa-plus-circle me-1"></i>
+            <span>Add Task</span>
+        </a>
+    </div>
+</div>

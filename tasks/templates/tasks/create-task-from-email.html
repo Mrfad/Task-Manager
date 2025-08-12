@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{#% load crispy_forms_tags %#}
+{% load humanize %}
+{% load widget_tweaks %}
+{% load filename_filters %}
+{% block title %}Add Tasks{% endblock title %}
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block content %}
+<!-- ✅ MODALS for Task Name & Customer -->
+{% include 'tasks/modals/add-taskname-modal.html' %}
+{% include 'customers/modals/add-customer-modal.html' %}
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <!-- ✅ Card -->
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white d-flex align-items-center">
+          <i class="fas fa-plus me-2"></i>
+          <h5 class="mb-0">Create New Task</h5>
+        </div>
+
+        <div class="card-body">
+          <form method="POST" enctype="multipart/form-data" class="was-validated" novalidate>
+            {% csrf_token %}
+
+            <!-- ⚙️ Customer + Project Row -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Customer</label>
+                <div class="input-group">
+                <select name="customer_name" id="id_customer_name" class="form-select form-select-sm select2" required>
+                    <option value="" disabled selected>Search by name or phone</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.pk }}"
+                        {% if form.customer_name.value|stringformat:"s" == customer.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ customer.customer_name }} - {{ customer.customer_phone }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                    <i class="fas fa-plus"></i>
+                </button>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Project</label>
+                {% render_field form.project class="form-select form-select-sm" %}
+              </div>
+            </div>
+
+            <!-- 📛 Task Name + Priority + Price -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Task Name</label>
+                <div class="input-group">
+                  {% render_field form.task_name class="form-select form-select-sm" %}
+                  <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaskNameModal">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Priority</label>
+                {% render_field form.task_priority class="form-select form-select-sm" %}
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Frontdesk Price</label>
+                {% render_field form.frontdesk_price class="form-control form-control-sm" %}
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Currency</label>
+                {% render_field form.currency class="form-control form-control-sm" %}
+              </div>
+            </div>
+
+            <!-- 👤 PM + 💳 Payment -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Project Manager</label>
+                {% render_field form.user class="form-select form-select-sm" %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Payment Method</label>
+                {% render_field form.payment_method class="form-select form-select-sm" %}
+              </div>
+            </div>
+
+            <!-- 📆 Due Date + 📎 File -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Due Date</label>
+                {% render_field form.job_due_date class="form-control form-control-sm" %}
+              </div>
+
+              
+              <div class="col-md-6">
+                <label class="form-label">File (optional)</label>
+                <div class="input-group">
+                  {% render_field form.file_name class="form-control form-control-sm" %}
+                  {% if form.instance.file_name %}
+                    <a href="{{ form.instance.file_name.url }}" target="_blank" class="btn btn-outline-secondary btn-sm" title="View attached file">
+                      <i class="fas fa-paperclip me-1"></i> View
+                    </a>
+                  {% endif %}
+                </div>
+                {% if form.instance.file_name %}
+                  <small class="text-muted">Already attached: {{ form.instance.file_name.name|basename }}</small>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- 📝 Notes -->
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              {% render_field form.notes class="form-control form-control-sm" %}
+            </div>
+
+            <!-- ✅ Submit / Cancel -->
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{% url 'tasks:all_tasks' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-times"></i> Cancel
+              </a>
+              <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fas fa-check"></i> Submit Task
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block extra_css %}
+<style>
+  .form-control, .form-select {
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .card {
+    border-radius: 12px;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: #e9ecef;
+  }
+</style>
+{% endblock extra_css %}
+
+{% block extra_js %}
+<script>
+  $(document).ready(function () {
+    $('#id_customer_name').select2({
+      theme: 'bootstrap-5',
+      placeholder: "Search by name or phone",
+      allowClear: true,
+    });
+  });
+</script>
+{% endblock extra_js %}

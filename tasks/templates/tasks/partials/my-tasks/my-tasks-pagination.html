@@ -1,0 +1,40 @@
+<!-- Pagination Info -->
+<div class="d-flex justify-content-center justify-content-md-between align-items-center my-2 text-muted small">
+    {% with start=tasks.start_index|default_if_none:0 end=tasks.end_index|default_if_none:0 %}
+        <span>Showing {{ start }} to {{ end }} of {{ tasks.paginator.count }} entries</span>
+        <span>Page {{ tasks.number }} of {{ tasks.paginator.num_pages }}</span>
+    {% endwith %}
+</div>
+
+<!-- Pagination Links -->
+<nav aria-label="Task navigation">
+    <ul class="pagination justify-content-center flex-wrap">
+        {% if tasks.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page=1">&laquo; First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ tasks.previous_page_number }}">&lsaquo; Prev</a>
+            </li>
+        {% endif %}
+
+        {% for i in tasks.paginator.page_range %}
+            {% if tasks.number == i %}
+                <li class="page-item active" aria-current="page"><span class="page-link">{{ i }}</span></li>
+            {% elif i > tasks.number|add:'-3' and i < tasks.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ i }}">{{ i }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if tasks.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ tasks.next_page_number }}">Next &rsaquo;</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ tasks.paginator.num_pages }}">Last &raquo;</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>

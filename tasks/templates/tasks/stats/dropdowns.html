@@ -1,0 +1,46 @@
+<div class="row">
+        <div class="col-auto">
+            <div class="dropdown mb-2">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Select a month of this year
+                </button>
+                <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 1 %}">January</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 2 %}">February</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 3 %}">March</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 4 %}">April</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 5 %}">May</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 6 %}">June</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 7 %}">July</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 8 %}">August</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 9 %}">September</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 10 %}">October</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 11 %}">November</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_month' 12 %}">December</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="dropdown mb-2">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Select a quarter
+                </button>
+                <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_quarter' '1' %}">Quarter1</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_quarter' '2' %}">Quarter2</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_quarter' '3' %}">Quarter3</a></li>
+                <li><a class="dropdown-item" href="{% url 'tasks:stats_quarter' '4' %}">Quarter4</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="dropdown mb-2">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Select a Year
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'tasks:stats_year' 2025  %}">Year {% now "Y" %}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>

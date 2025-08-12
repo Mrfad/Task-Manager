@@ -1,0 +1,417 @@
+{% load humanize %}
+{% load group_check %}
+
+<div class="col-12 col-md-12 col-lg-4 order-2 order-md-2">
+
+    <!-- Main tabbed content -->
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0"><i class="fa-solid fa-circle-info"></i> Job Information</h5>
+        </div>
+        <div class="card-body p-0">
+            <!-- Tabbed navigation -->
+            <div class="overflow-auto">
+                <ul class="nav nav-tabs flex-nowrap" id="jobInfoTabs" role="tablist" style="min-width: 400px; white-space: nowrap;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="status-tab" data-bs-toggle="tab" data-bs-target="#status" type="button" role="tab" aria-controls="status" aria-selected="true">Status</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="false">Details</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab" aria-controls="payment" aria-selected="false">Payment</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="customer-tab" data-bs-toggle="tab" data-bs-target="#customer" type="button" role="tab" aria-controls="customer" aria-selected="false">Customer</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="delivery-tab" data-bs-toggle="tab" data-bs-target="#delivery" type="button" role="tab" aria-controls="delivery" aria-selected="false">Delivery</button>
+                    </li>
+              </ul>
+            </div>
+
+            <!-- Tab content -->
+            <div class="tab-content p-3" id="jobInfoTabContent">
+
+                <!-- Job Status Tab -->
+                <div class="tab-pane fade show active" id="status" role="tabpanel" aria-labelledby="status-tab">
+                    {% if task.canceled %}
+                        <div class="alert alert-danger mb-2">
+                            <i class="fa-solid fa-ban"></i> Task is canceled
+                        </div>
+                        <p class="mb-0"><strong>Cancel Reason:</strong> {{cancel_request.cancel_reason}}</p>
+                    {% elif task.closed and all_finished and not task.is_delivered %}
+                        <div class="alert alert-warning mb-2">
+                            <i class="fa-solid fa-exclamation-circle"></i> Job is closed but not delivered
+                        </div>
+                    {% elif task.closed and all_finished and task.is_delivered %}
+                        <div class="alert alert-success mb-2">
+                            <i class="fa-solid fa-check-circle"></i> Job is closed and delivered
+                        </div>
+                        <p class="mb-0"><strong>Location:</strong> {{task.final_user|title}} sent it to: <strong>{{task.final_location}}</strong></p>
+                    {% elif task.cancel_request %}
+                        <div class="alert alert-warning mb-2">
+                            <i class="fa-solid fa-hourglass-half"></i> Pending Cancel
+                        </div>
+                        <p class="mb-0"><strong>Cancel Reason:</strong> {{cancel_request.cancel_reason}}</p>
+                    {% elif task.check_all_subtasks_done and not task.closed %}
+                        <div class="alert alert-warning mb-2">
+                            <i class="fa-solid fa-exclamation-circle"></i> All operators finished but job is still open
+                        </div>
+                        <p class="mb-0"><strong>Location:</strong> {{task.final_user|title}} sent it to: <strong>{{task.final_location}}</strong></p>
+                    {% elif not task.check_all_subtasks_done and not task.closed %}
+                        <div class="alert alert-warning mb-2">
+                            <i class="fa-solid fa-hourglass-start"></i> Job is still open
+                        </div>
+                        <p class="mb-0"><strong>Location:</strong> {{task.final_user|title}} sent it to: <strong>{{task.final_location}}</strong></p>
+                    {% endif %}
+
+                    <!-- Progress bar -->
+                    <h6 class="mt-3 mb-2"><i class="fa-solid fa-chart-line"></i> Job Progress</h6>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1 me-3">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                     role="progressbar" 
+                                     style="width: {{ task.get_all_subtasks_progess_percentage }}%;" 
+                                     aria-valuenow="{{ task.get_all_subtasks_progess_percentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fw-bold">
+                            {% if not task.get_all_subtasks_progess_percentage %}0%{% else %}{{task.get_all_subtasks_progess_percentage}}%{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Due Date -->
+                    <div class="row mb-2">
+                        <div class="col-12 col-md-5"><strong>Due Date:</strong></div>
+                        <div class="col-12 col-md-7">
+                            {{task.job_due_date}}
+                            {% now "Y-m-d" as todays_date %}
+                            {% if todays_date < task.job_due_date|date:"Y-m-d" %}
+                                <span class="badge bg-warning ms-2">After {{task.job_due_date|timeuntil}}</span>
+                            {% elif not task.job_due_date %}
+                                <span class="badge bg-secondary ms-2">No date</span>
+                            {% elif todays_date > task.job_due_date|date:"Y-m-d" %}
+                                <span class="badge bg-danger ms-2">Since {{task.job_due_date|timesince}}</span>
+                            {% else %}
+                                <span class="badge bg-success ms-2">Today</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="row">
+                        <div class="col-12 col-md-5"><strong><i class="fa-solid fa-note-sticky"></i> Notes from {{task.created_by.get_full_name}}:</strong></div>
+                        <div class="col-12 col-md-7">{{task.notes|default:"-"}}</div>
+                    </div>
+                    <div class="row">
+                        {% if task.file_name %}
+                            <p class="card-title">File: <a href="{{task.file_name.url}}" download="{{task.file_name.url}}">{{task.file_name}}</a></p>
+                        {% else %}
+                            <p class="card-title text-warning">File: No file Added</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Job Details Tab -->
+                <div class="tab-pane fade" id="details" role="tabpanel" aria-labelledby="details-tab">
+                    <div class="row mb-2">
+                        <div class="col-12 col-md-5"><strong><i class="fa-solid fa-file-signature"></i> Job Name:</strong></div>
+                        <div class="col-12 col-md-7">{{task.task_name}}</div>
+                    </div>
+                    {% if task.branch %}
+                    <div class="row mb-2">
+                        <div class="col-12 col-md-5"><strong><i class="fa-solid fa-file-signature"></i> Branch Name:</strong></div>
+                        <div class="col-12 col-md-7">{{task.branch}}</div>
+                    </div>
+                    {% endif %}
+                    <div class="row mb-2">
+                        <div class="col-12 col-md-5"><strong><i class="fa-solid fa-calendar-plus"></i> Creation Date:</strong></div>
+                        <div class="col-12 col-md-7">{{task.created_at|date:"d-m-Y H:i"}}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-12 col-md-5"><strong><i class="fa-solid fa-calendar-check"></i> Due Date:</strong></div>
+                        <div class="col-12 col-md-7">
+                            {{task.job_due_date}}
+                            {% now "Y-m-d" as todays_date %}
+                            {% if todays_date < task.job_due_date|date:"Y-m-d" %}
+                                <span class="badge bg-warning ms-2">After {{task.job_due_date|timeuntil}}</span>
+                            {% elif not task.job_due_date %}
+                                <span class="badge bg-secondary ms-2">No date</span>
+                            {% elif todays_date > task.job_due_date|date:"Y-m-d" %}
+                                <span class="badge bg-danger ms-2">Since {{task.job_due_date|timesince}}</span>
+                                <!-- <span class="badge bg-success ms-2">Today</span> -->
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-12 col-md-5"><strong><i class="fa-solid fa-calendar-check"></i> Finished Date:</strong></div>
+                        <div class="col-12 col-md-7 bg-success">{{task.updated_at|date:"d-m-Y H:i"}}</div>
+                    </div>
+
+                    {% if task.file_name %}
+                    <div class="row mb-2">
+                        <div class="col-12 col-md-5"><strong><i class="fa-solid fa-calendar-check"></i> File:</strong></div>
+                        <div class="col-12 col-md-7">
+                            <a href="{{task.file_name.url}}" download="{{task.file_name.url}}">{{task.file_name}}</a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Created By -->
+                    <div class="mt-3 p-2 border rounded bg-light">
+                        <p class="text-muted mb-1"><strong>Job Created by: </strong>{{task.created_by.get_full_name}}</p>
+                    </div>
+                </div>
+
+                <!-- Payment Tab -->
+                <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+                    <div class="mb-3">
+                        <strong>Total Price:</strong> {{ task.final_price|floatformat:2 }} {{ task.currency }}<br>
+                        <strong>Paid Amount:</strong> {{ total_paid|floatformat:2 }} {{ task.currency }}<br>
+                        <strong>Balance:</strong> {{ balance|floatformat:2 }} {{ task.currency }}
+
+                        <div class="mt-2">
+                            {% if task.paid_status == 'P' %}
+                                <span class="badge bg-success">Fully Paid</span>
+                            {% elif total_paid > 0 %}
+                                <span class="badge bg-warning text-dark">Partial Payment</span>
+                            {% else %}
+                                <span class="badge bg-danger">Unpaid</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    {% if task.payments.exists %}
+                        <h6><i class="fa-solid fa-money-bill-wave me-1"></i> Payments</h6>
+                        <ul class="list-group list-group-flush">
+                            {% for payment in task.payments.all %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between text-start">
+                                        <div>
+                                            <strong>{{ payment.get_payment_type_display }}</strong><br>
+                                            Method: <em>{{ payment.get_payment_method_display }}</em><br>
+                                            {% if payment.notes %}
+                                                Notes: <span class="text-muted"><strong>{{ payment.notes }}</strong></span><br>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-end">
+                                            <strong class="text-success">{{ payment.amount|floatformat:2 }} {{ task.currency }}</strong><br>
+                                            <small class="text-muted">{{ payment.paid_at|date:"Y-m-d H:i" }}</small><br>
+                                            <small class="text-muted">By {{ payment.paid_by.get_full_name|default:payment.paid_by.username }}</small>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No payments recorded yet.
+                        </div>
+                    {% endif %}
+                </div>
+
+
+                <!-- Customer Tab -->
+                <div class="tab-pane fade" id="customer" role="tabpanel" aria-labelledby="customer-tab">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-address-book me-2"></i>Name</span>
+                            <a href="{% url 'customers:customer_detail' task.customer_name.customer_id %}" class="text-decoration-none">{{task.customer_name|title}}</a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-fw fa-phone me-2"></i>Phone</span>
+                            <span>{{task.customer_name.customer_phone}}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="far fa-fw fa-envelope me-2"></i>Email</span>
+                            <span>{{task.customer_name.email|default:"-"}}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-globe me-2"></i>Website</span>
+                            <span>{{task.customer_name.website|default:"-"}}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fa fa-list me-2" aria-hidden="true"></i>Account No.</span>
+                            <span>{{task.customer_name.account_number|default:"-"}}</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Delivery Tab -->
+                <div class="tab-pane fade" id="delivery" role="tabpanel" aria-labelledby="delivery-tab">
+                    {% if task.is_delivered %}
+                        <div class="alert alert-success mb-2">
+                            <i class="fa-solid fa-check-circle"></i> Job has been delivered
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-12 col-md-5"><strong>Received by:</strong></div>
+                            <div class="col-12 col-md-7">{{ delivered_task.received_person|title }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-12 col-md-5"><strong>Delivered by:</strong></div>
+                            <div class="col-12 col-md-7">{{ delivered_task.delivered_by | title }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-12 col-md-5"><strong>Delivery Date:</strong></div>
+                            <div class="col-12 col-md-7">{{ delivered_task.delivery_date|date:"d-m-Y H:i"}}</div>
+                        </div>
+                        {% if delivery.notes %}
+                        <div class="row mb-2">
+                            <div class="col-12 col-md-5"><strong>Delivery Notes:</strong></div>
+                            <div class="col-12 col-md-7">{{delivery_info.notes}}</div>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-warning mb-0">
+                            <i class="fa-solid fa-exclamation-circle"></i> Job has not been delivered yet
+                        </div>
+
+                        {% if task.final_location %}
+                        <div class="mt-2">
+                            <strong>Location:</strong> {{task.final_user|title}} sent it to: <strong>{{task.final_location}}</strong>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div> <!-- /.tab-content -->
+        </div> <!-- /.card-body -->
+    </div> <!-- /.card -->
+
+
+                <div class="text-center mt-3 mb-3 d-flex flex-wrap justify-content-center gap-2">
+              <!-- <a href="{% url 'tasks:all_tasks' %}" class="btn btn-sm btn-success">All Jobs</a> -->
+              <!-- <a href="{% url 'tasks:add_task' %}" class="btn btn-sm btn-primary">New</a> -->
+              <!-- invoice button section -->
+              {#% include 'tasks/partials/task-detail/invoice-form.html' %#}
+              <!-- only assigned operators can assign another operator once they finish their job -->
+              {% if can_assign_operator %}
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addSubtaskModal">Assign Operator</button>
+              {% elif task.closed and not task.status == "delivered" %}
+                <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#undoCloseTaskModal">Undo close</button>
+              {% endif %}
+              
+              <!-- only yask creator can cancel this task operator can send cancel request -->
+              {% if request.user|in_group:"Developer|Managers|ManagerAssistant" or task.is_created_by_current_user %}
+                {% if not task.closed and not task.canceled and task.status != 'delivered' %}
+                  <a href="{% url 'tasks:update_task_view' task.id %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Update this task">
+                    Update main task
+                  </a>
+                {% else %}
+                  <span data-bs-toggle="tooltip" title="{% if task.status == 'delivered' %}Task has been delivered and cannot be updated.{% elif task.closed %}Task is closed and cannot be updated.{% elif task.canceled %}Task has been canceled.{% endif %}">
+                    <a href="#" class="btn btn-sm btn-secondary disabled" tabindex="-1" aria-disabled="true">
+                      Update
+                    </a>
+                  </span>
+                {% endif %}
+              {% endif %}
+              <!-- close task button -->
+              {% if request.user|in_group:"Developer|Managers|ManagerAssistant" or request.user.is_project_manager %}
+                <!-- only allow if task is still open and all operators done -->
+                {% if not task.closed and task.check_all_subtasks_done %}
+                  <button type="button" 
+                          class="btn btn-sm btn-warning" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#closeTaskModal"
+                          title="Click to close this task.">
+                    Close Task
+                  </button>
+                
+                <!-- prevent if all operators did not close teir subtasks -->
+                {% elif not task.check_all_subtasks_done %}
+                  <span data-bs-toggle="tooltip" title="Task cannot be closed until all subtasks are completed.">
+                    <button type="button" class="btn btn-sm btn-secondary" disabled>
+                      Close Task
+                    </button>
+                  </span>
+                {% endif %}
+                
+                {% elif task.paid_status == 'U' %}
+                <span data-bs-toggle="tooltip" title="Task cannot be closed until it's fully paid.">
+                    <button type="button" class="btn btn-sm btn-secondary" disabled>
+                      Close Task
+                    </button>
+                  </span>
+                
+              {% endif %}
+
+              <!-- Cancel button only Task creator can cancel this task operator can send cancel request -->
+              {% if request.user|in_group:"Developer|Managers|ManagerAssistant" or task.is_created_by_current_user %}
+                {% if not task.closed and task.status != 'delivered' and not task.canceled %}
+                  <button type="button"
+                          class="btn btn-sm btn-warning"
+                          data-bs-toggle="modal"
+                          data-bs-target="#cancelTaskModal"
+                          title="Click to cancel this task. This action cannot be undone.">
+                      Cancel Task
+                  </button>
+                {% else %}
+                  <span data-bs-toggle="tooltip" title="{% if task.closed %}Task is closed and cannot be canceled.{% elif task.status == 'delivered' %}Task is already delivered.{% elif task.canceled %}Task has already been canceled.{% else %}Cancellation not allowed at this stage.{% endif %}">
+                    <button type="button" class="btn btn-sm btn-secondary" disabled>
+                      Cancel Task
+                    </button>
+                  </span>
+                {% endif %}
+              {% endif %}
+
+              <!-- Deliver button -->
+              {% if request.user|in_group:"Developer|Managers|ManagerAssistant" or request.user.is_project_manager %}
+                {% if task.status != 'delivered' %}
+
+                  {% if task.closed and task.paid_status == 'P' %}
+                    <a href="{% url 'tasks:deliver_job' task.id %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Click to mark this task as delivered.">
+                      Deliver
+                    </a>
+
+                  {% elif task.closed and task.branch_id == 1 %}
+                    <a href="{% url 'tasks:deliver_job' task.id %}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Click to mark this task as delivered.">
+                      Deliver
+                    </a>
+
+                  {% elif not task.closed and task.paid_status == 'P' %}
+                    <span data-bs-toggle="tooltip" title="Task must be closed and paid before it can be delivered.">
+                      <a href="#" class="btn btn-sm btn-secondary disabled" tabindex="-1" aria-disabled="true">
+                        Deliver
+                      </a>
+                    </span>
+                  
+                  {% elif task.closed and task.paid_status != 'P' %}
+                    <span data-bs-toggle="tooltip" title="Task must be fully paid before it can be delivered.">
+                      <a href="#" class="btn btn-sm btn-secondary disabled" tabindex="-1" aria-disabled="true">
+                        Deliver
+                      </a>
+                    </span>
+
+                  {% else %}
+                    <span data-bs-toggle="tooltip" title="Task must be closed and fully paid before it can be delivered.">
+                      <a href="#" class="btn btn-sm btn-secondary disabled" tabindex="-1" aria-disabled="true">
+                        Deliver
+                      </a>
+                    </span>
+                  {% endif %}
+
+                {% endif %}
+                
+              {% endif %}
+
+
+              {% if task.from_email and task.email %}
+                <a href="{% url 'mail:mail_detail' task.email.id %}" class="btn btn-sm btn-outline-info">
+                  <i class="fas fa-envelope-open-text"></i> See Original Email
+                </a>
+              {% endif %}
+              {% if task.project %}
+                <a href="{% url 'tasks:project_detail' task.project.id %}?next={{ request.get_full_path }}" class="btn btn-primary btn-sm">Project Detail</a>
+              {% endif %}
+
+            </div>
+
+
+
+</div> <!-- /.col -->

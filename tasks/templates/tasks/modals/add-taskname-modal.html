@@ -1,0 +1,20 @@
+<div class="modal fade" id="addTaskNameModal" tabindex="-1" aria-labelledby="addTaskNameModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="{% url 'tasks:add_taskname_modal' %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="addTaskNameModalLabel">Add New Task Name</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Task Name</label>
+          <input type="text" name="task_name" class="form-control" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary btn-sm">Add</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

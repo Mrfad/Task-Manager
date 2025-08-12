@@ -1,0 +1,8 @@
+{% extends 'tasks/my-tasks-dashboard/base-dash.html' %}
+{% block card %}{% if 'unpaid/' in request.path %} class="card bg-info" {% else %} class="card" {% endif %}{% endblock card %}
+{% block link %}{% url 'tasks:my_tasks_query' 'unpaid' %}{% endblock link %}
+{% block icon %}
+    <i class="fa-solid fa-money-bill-wave fa-3x {% if 'unpaid/' in request.path %}text-light{% else %}text-danger{% endif %}"></i>
+{% endblock icon %}
+{% block value %}{% if 'unpaid/' in request.path %}<div class="text-light" id="unpaid">{{unpaid_count}}</div>{% else %}<div class="text-info" id="unpaid">{{unpaid_count}}</div>{% endif %}{% endblock value %}
+{% block dash-title %}{% if 'unpaid/' in request.path %}<div class="text-light">Unpaid</div>{% else %}<div class="text-info">Unpaid</div>{% endif %}{% endblock dash-title %}

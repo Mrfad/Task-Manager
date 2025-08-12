@@ -1,0 +1,33 @@
+{% extends 'tasks/my-tasks-dashboard/base-dash.html' %}
+
+{% block card %}
+    {% if 'closed-waiting-delivery/' in request.path %} 
+        class="card bg-info" 
+    {% else %} 
+        class="card" 
+    {% endif %}
+{% endblock card %}
+
+{% block link %}
+    {% url 'tasks:my_tasks_query' 'closed-waiting-delivery' %}
+{% endblock link %}
+
+{% block icon %}
+    <i class="fa-solid fa-truck fa-3x {% if 'closed-waiting-delivery/' in request.path %}text-light{% else %}text-info{% endif %}"></i>
+{% endblock icon %}
+
+{% block value %}
+    {% if 'closed-waiting-delivery/' in request.path %}
+        <div class="text-light" id="closedWaitingDelivery">{{close_waiting_delivery_count}}</div>
+    {% else %}
+        <div class="text-info" id="closedWaitingDelivery">{{close_waiting_delivery_count}}</div>
+        {% endif %}
+{% endblock value %}
+
+{% block dash-title %}
+    {% if 'closed-waiting-delivery/' in request.path %}
+        <div class="text-light">Closed Waiting Delivery</div>
+    {% else %}
+        <div class="text-info">Closed Waiting Delivery</div>
+    {% endif %}
+{% endblock dash-title %}

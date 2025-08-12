@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% load group_check %}
+
+{% block extra_css %}
+{% include 'partials/statscss.html' %}
+{% endblock extra_css %}
+
+{% block title %}Task manager | All Tasks{% endblock %}
+
+<!-- Block Sidebar content -->
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+<!-- Block to prevent backround image -->
+{% block background-image %}{% endblock background-image %}
+{% block content %}
+<div class="container-fluid mt-4">
+  {% if request.user|in_group:"Developer|Managers" %}
+    <h3 class="text-center fw-bold text-success mb-4">Year {{ year_number }} | Quarter {{ quarter_number }}</h3>
+
+    {% include 'tasks/stats/dropdowns.html' %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-card animate__animated animate__fadeInUp">
+                <h5 class="card-title text-center">Quarterly USD Stats</h5>
+                <canvas id="myChartusd"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card animate__animated animate__fadeInUp">
+                <h5 class="card-title text-center">Quarterly LBP Stats</h5>
+                <canvas id="myChartlbp"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-card animate__animated animate__fadeInUp">
+                <h5 class="card-title text-center">Monthly USD in Quarter</h5>
+                <canvas id="monthChartUSD"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card animate__animated animate__fadeInUp">
+                <h5 class="card-title text-center">Monthly LBP in Quarter</h5>
+                <canvas id="monthChartLBP"></canvas>
+            </div>
+        </div>
+    </div>
+    
+  {% else %}
+    <h1 class="text-center text-danger">You are not allowed to view this page!!</h1>
+  {% endif %}
+</div>
+
+{% for stat in user_stats %}
+    <p>{{ stat.user.username }}: {{ stat.total_price_with_vat_with_discount_designer }}</p>
+{% endfor %}
+{% endblock content %}
+{% block extra_js %} 
+<!-- chartjs -->
+<script src="{% static 'js/chart.js' %}"></script> 
+<script>
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+        }
+
+</script>
+  <script>
+    const ctxusd = document.getElementById('myChartusd');
+    new Chart(ctxusd, {
+      type: 'bar',
+      data: {
+        labels: [{% for stat in quarter_statsusd %} '{{ stat.user.username }}', {% endfor %}],
+        datasets: [{
+          label: '{{year_number}}' + ' Quarter {{quarter_number}}' + ' ' + 'USD',
+          data: [{% for stat in quarter_statsusd %} {{ stat.total_final_price }}, {% endfor %}],
+          backgroundColor: [
+          {% for stat in quarter_statsusd %} getRandomColor(), {% endfor %}
+
+    ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+  <script>
+    const ctxlbp = document.getElementById('myChartlbp');
+    new Chart(ctxlbp, {
+      type: 'bar',
+      data: {
+        labels: [{% for stat in quarter_statslbp %} '{{ stat.user.username }}', {% endfor %}],
+        datasets: [{
+          label: '{{year_number}}' + ' Quarter {{quarter_number}}' + ' ' + 'LBP',
+          data: [{% for stat in quarter_statslbp %} {{ stat.total_price_with_vat_with_discount_designer }}, {% endfor %}],
+          backgroundColor: [
+          {% for stat in quarter_statslbp %} getRandomColor(), {% endfor %}
+    ],
+          borderWidth: 1
+        }],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    const monthsusd = document.getElementById('monthChartUSD');
+    new Chart(monthsusd, {
+      type: 'bar',
+      data: {
+        labels: [{% for month in month_usd %} '{{ month.month }}', {% endfor %}],
+        datasets: [{
+          label: '{{year_number}}' + ' Quarter {{quarter_number}}' + ' ' + 'USD',
+          data: [{% for month in month_usd %} {{ month.Amount }}, {% endfor %}],
+          backgroundColor: [
+          {% for month in month_usd %} getRandomColor(), {% endfor %}
+    ],
+          borderWidth: 1
+        }],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    const monthslbp = document.getElementById('monthChartLBP');
+    new Chart(monthslbp, {
+      type: 'bar',
+      data: {
+        labels: [{% for month in month_lbp %} '{{ month.month }}', {% endfor %}],
+        datasets: [{
+          label: '{{year_number}}' + ' Quarter {{quarter_number}}' + ' ' + 'LBP',
+          data: [{% for month in month_lbp %} {{ month.Amount }}, {% endfor %}],
+          backgroundColor: [
+          {% for month in month_lbp %} getRandomColor(), {% endfor %}
+    ],
+          borderWidth: 1
+        }],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    
+  </script>
+   
+{% endblock extra_js %} 
+                  

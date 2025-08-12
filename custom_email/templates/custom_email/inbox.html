@@ -1,0 +1,242 @@
+{% extends 'custom_email/base_email.html' %}
+{% load querystring_tags %}
+
+{% block title %}{{ folder|title }}{% endblock %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block background-image %}{% endblock background-image %}
+
+{% block email_content %}
+  <style>
+    .table-hover tbody tr:hover {
+      background-color: #f1f4f9;
+      cursor: pointer;
+    }
+
+    .new-badge {
+      background-color: #0dcaf0;
+      color: white;
+      font-size: 0.7em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1;
+    }
+
+    thead th i.fa-sort {
+      opacity: 0.6;
+    }
+
+    th a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    th a:hover {
+      text-decoration: underline;
+    }
+
+    .pagination-controls a {
+      margin: 0 5px;
+      text-decoration: none;
+      color: #0d6efd;
+    }
+
+    .pagination-controls span {
+      margin: 0 5px;
+      font-weight: 500;
+    }
+
+    .new-row {
+      background-color: rgba(13, 207, 240, 0.05);
+      border-left: 4px solid #0dcaf0;
+    }
+  </style>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">{{ folder|title }} — <small class="text-muted">{{ selected_mailbox.name }}</small></h3>
+  </div>
+
+  {% if no_mailbox %}
+    <div class="alert alert-warning">No mailbox linked to your account.</div>
+  {% endif %}
+
+  {% if page_obj %}
+    <div class="alert alert-info">📥 Showing {{ page_obj.paginator.count }} emails</div>
+  {% endif %}
+
+  <form method="get" class="mb-4 row g-2 align-items-center" role="search">
+    <input type="hidden" name="mailbox" value="{{ selected_mailbox.id }}">
+    <input type="hidden" name="folder" value="{{ folder }}">
+    <input type="hidden" name="sort" value="{{ sort }}">
+
+    <div class="col-md-6">
+      <input type="text" name="search" class="form-control" placeholder="🔍 Search emails..."
+             value="{{ search_query }}">
+    </div>
+
+    <div class="col-auto">
+      <select name="per_page" class="form-select" onchange="this.form.submit()">
+        {% for num in per_page_choices %}
+          <option value="{{ num }}" {% if per_page|stringformat:"s" == num|stringformat:"s" %}selected{% endif %}>
+            Show {{ num }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+    </div>
+  </form>
+
+  <!-- Desktop Table View -->
+  <div class="d-none d-lg-block table-responsive">
+    <table class="table table-hover align-middle shadow-sm">
+      <thead class="table-light">
+        <tr>
+          <!-- Sender Column -->
+          <th>
+            <a href="?{% if sort == 'sender' %}{% querystring sort='-sender' %}{% else %}{% querystring sort='sender' %}{% endif %}">
+              Sender
+              {% if sort == 'sender' %}
+                <i class="fa fa-sort-alpha-down"></i>
+              {% elif sort == '-sender' %}
+                <i class="fa fa-sort-alpha-up"></i>
+              {% else %}
+                <i class="fa fa-sort"></i>  {# neutral sort icon #}
+              {% endif %}
+            </a>
+          </th>
+
+          <!-- Subject Column -->
+          <th>
+            <a href="?{% if sort == 'subject' %}{% querystring sort='-subject' %}{% else %}{% querystring sort='subject' %}{% endif %}">
+              Subject
+              {% if sort == 'subject' %}
+                <i class="fa fa-sort-alpha-down"></i>
+              {% elif sort == '-subject' %}
+                <i class="fa fa-sort-alpha-up"></i>
+              {% else %}
+                <i class="fa fa-sort"></i>
+              {% endif %}
+            </a>
+          </th>
+
+          <!-- Received Date Column -->
+          <th>
+            <a href="?{% if sort == 'date_received' %}{% querystring sort='-date_received' %}{% else %}{% querystring sort='date_received' %}{% endif %}">
+              Received
+              {% if sort == 'date_received' %}
+                <i class="fa fa-sort-numeric-down"></i>
+              {% elif sort == '-date_received' %}
+                <i class="fa fa-sort-numeric-up"></i>
+              {% else %}
+                <i class="fa fa-sort"></i>
+              {% endif %}
+            </a>
+          </th>
+
+          <!-- Attachment Column (no sorting) -->
+          <th>Attachment</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for email in page_obj %}
+          <tr class="{% if email.is_new %}new-row{% endif %}"
+              onclick="location.href='{% url 'mail:mail_detail' email.id %}'">
+            <!-- Sender + NEW badge + assigned info -->
+            <td>
+              {{ email.sender }}
+              {% if email.is_new %}<span class="new-badge">NEW</span>{% endif %}
+              {% if email.assigned_to %}
+                <div class="text-success small mt-1">
+                  👤 {{ email.assigned_to.get_full_name|default:email.assigned_to.username }}
+                </div>
+              {% endif %}
+            </td>
+
+            <!-- Subject (truncate) -->
+            <td>{{ email.subject|truncatechars:100 }}</td>
+
+            <!-- Received Date + timesince -->
+            <td>
+              <small>{{ email.date_received|date:"M d, H:i" }}</small><br>
+              <small class="text-muted">{{ email.date_received|timesince }} ago</small>
+            </td>
+
+            <!-- Attachment icon -->
+            <td>
+              {% if email.has_real_attachments %}
+                <i class="fa-solid fa-paperclip text-muted"></i>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="text-center text-muted">No emails found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mobile Card View -->
+  <div class="d-lg-none">
+    <div class="row">
+      {% for email in page_obj %}
+        <div class="col-12 mb-3">
+          <div class="card card-task-mobile {% if email.is_new %}new-row{% endif %}" onclick="location.href='{% url 'mail:mail_detail' email.id %}'">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <h6 class="mb-1">{{ email.subject|truncatechars:50 }}</h6>
+                {% if email.has_real_attachments %}
+                  <i class="fa-solid fa-paperclip text-muted"></i>
+                {% endif %}
+              </div>
+              <p class="mb-1"><strong>From:</strong> {{ email.sender }}</p>
+              <p class="text-muted small mb-0">{{ email.date_received|timesince }} ago</p>
+              {% if email.is_new %}
+                <span class="badge bg-info mt-2">New</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col">
+          <p class="text-center text-muted">No emails found.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="mt-4 pagination-controls text-center">
+    {% if page_obj.has_previous %}
+      <a href="?{% querystring page=page_obj.previous_page_number %}">« Previous</a>
+    {% endif %}
+
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+      <a href="?{% querystring page=page_obj.next_page_number %}">Next »</a>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    setInterval(function() {
+      window.location.reload();
+    }, 180000); // Reload every 3 minutes
+  </script>
+{% endblock %}

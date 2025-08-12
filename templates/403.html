@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Access Denied{% endblock %}
+
+{% block background-image %}
+{% endblock background-image %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h1 class="display-4 text-danger">🚫 Access Denied</h1>
+    <p class="lead">You do not have permission to view this page.</p>
+    <a href="{% url 'tasks:home' %}" class="btn btn-primary mt-3">
+        🔙 Go Back to Home
+    </a>
+</div>
+{% endblock %}

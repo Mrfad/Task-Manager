@@ -1,0 +1,119 @@
+<div class="modal fade" id="u{{subtask.id}}" tabindex="-1" aria-labelledby="u{{subtask.id}}Label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-sm rounded-4">
+      <div class="modal-header bg-primary text-white rounded-top">
+        <h5 class="modal-title" id="u{{subtask.id}}Label">
+          <i class="fas fa-edit me-2"></i>Update Your Subtask
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <form method="post" action="{% url 'tasks:update_subtask_modal' task.id %}" class="was-validated">
+          {% csrf_token %}
+          <input type="hidden" name="subtask_id" value="{{ subtask.id }}">
+
+          <!-- Task Name -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Task:</label>
+            <select name="name" class="form-select form-select-sm" required>
+              {% for task_name in task_names %}
+                <option value="{{ task_name.id }}" {% if subtask.name.id == task_name.id %}selected{% endif %}>
+                  {{ task_name.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <!-- Amount -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Amount ({{ subtask.currency }}):</label>
+            <input type="number" name="subtask_amount" class="form-control" step="0.01" min="0"
+                   value="{{ subtask.subtask_amount|default:'0' }}">
+          </div>
+
+          <!-- Completion Checkbox -->
+          <div class="mb-3 form-check form-switch">
+            <input type="checkbox" class="form-check-input" id="id_is_done_{{ subtask.id }}" name="is_done"
+                   {% if subtask.is_done %}checked{% endif %}>
+            <label class="form-check-label fw-bold" for="id_is_done_{{ subtask.id }}">Mark as completed</label>
+          </div>
+
+          <!-- Final Location Selector -->
+          <div class="mb-3" id="locationContainer_{{ subtask.id }}" style="display: none;">
+            <label class="form-label fw-bold">Final Job Location</label>
+            <select name="final_location" id="id_final_location_{{ subtask.id }}" class="form-select form-select-sm mb-2">
+              <option value="">-- Choose Final Location --</option>
+              {% for value, label in task.FINAL_LOCATION %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+
+            <input type="text" name="other_location" id="id_other_location_{{ subtask.id }}"
+                   class="form-control form-control-sm" placeholder="Or enter a custom location">
+            <small class="text-muted">Only required if marking as completed</small>
+          </div>
+
+          <!-- Notes -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Notes:</label>
+            <textarea class="form-control" name="notes_from_operator" rows="3">{{ subtask.notes_from_operator }}</textarea>
+          </div>
+
+          <!-- Hidden fields -->
+          <input type="hidden" name="task" value="{{ subtask.task.id }}">
+          <input type="hidden" name="user" value="{{ subtask.user.id }}">
+          <textarea hidden name="notes_from_top">{{ subtask.notes_from_top }}</textarea>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times me-1"></i> Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-1"></i> Update Subtask
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const isDone = document.getElementById('id_is_done_{{ subtask.id }}');
+  const locationContainer = document.getElementById('locationContainer_{{ subtask.id }}');
+  const finalSelect = document.getElementById('id_final_location_{{ subtask.id }}');
+  const otherInput = document.getElementById('id_other_location_{{ subtask.id }}');
+
+  function toggleLocationFields() {
+    const isChecked = isDone.checked;
+    locationContainer.style.display = isChecked ? 'block' : 'none';
+
+    // If shown, handle mutual exclusivity
+    if (isChecked) {
+      const hasFinal = finalSelect.value.trim() !== "";
+      const hasOther = otherInput.value.trim() !== "";
+
+      finalSelect.disabled = !!hasOther;
+      otherInput.readOnly = !!hasFinal;
+
+      if (hasFinal) {
+        otherInput.value = '';
+      } else if (hasOther) {
+        finalSelect.selectedIndex = 0;
+      } else {
+        finalSelect.disabled = false;
+        otherInput.readOnly = false;
+      }
+    } else {
+      finalSelect.disabled = false;
+      otherInput.readOnly = false;
+    }
+  }
+
+  toggleLocationFields();  // init
+  isDone.addEventListener('change', toggleLocationFields);
+  finalSelect.addEventListener('change', toggleLocationFields);
+  otherInput.addEventListener('input', toggleLocationFields);
+});
+</script>

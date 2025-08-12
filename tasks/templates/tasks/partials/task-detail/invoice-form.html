@@ -1,0 +1,9 @@
+{% if not invoicename %}
+    <form method="POST" id="demo-form2" class="form-horizontal form-label-left d-inline">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit" class="btn btn-sm btn-primary">Generate Invoice</button>
+    </form>
+{% else %}
+    <a href="{% url 'invoice_detail' task.invoice.id task.id %}" class="btn btn-sm btn-primary">Show Invoice</a>
+{% endif %}

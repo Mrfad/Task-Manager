@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{{ article.title }} | Help{% endblock %}
+
+{% block background-image %}
+{% endblock background-image %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ article.title }}</h2>
+    <div class="mt-3">
+        {{ article.content|safe }}
+    </div>
+    <div class="mt-4">
+        <a href="{% url 'helpcenter:category_detail' article.category.slug %}" class="btn btn-outline-secondary">← Back to {{ article.category.name }}</a>
+    </div>
+</div>
+{% endblock %}

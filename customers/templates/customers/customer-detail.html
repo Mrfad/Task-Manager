@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Customer Detail | {{ customer.customer_name }}{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .btn-sm {
+        font-size: 0.8rem;
+    }
+
+    .btn-outline-secondary {
+        border-radius: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-primary {
+        background-color: #4a6cf7;
+        border-color: #4a6cf7;
+        border-radius: 20px;
+        box-shadow: 0 2px 6px rgba(74, 108, 247, 0.2);
+    }
+
+    .btn-primary:hover {
+        background-color: #3f5be0;
+        border-color: #3f5be0;
+    }
+
+    .profile-card {
+        border: none;
+        border-radius: 16px;
+        padding: 2rem;
+        background: #ffffff;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .profile-header {
+        text-align: center;
+    }
+
+    .profile-header h2 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+
+    .customer-meta {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.75rem;
+    }
+
+    .avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #dee2e6;
+        margin: 0 auto;
+    }
+
+    .info-label {
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-weight: 500;
+    }
+
+    .highlight-box {
+        border-radius: 12px;
+        padding: 1.2rem;
+        background: #f8f9fa;
+        box-shadow: inset 0 0 0 1px #e0e0e0;
+        margin-bottom: 1rem;
+    }
+
+    .highlight-box h6 {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+
+    .highlight-box .amount {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .notes {
+        white-space: pre-line;
+    }
+
+    .task-table th, .task-table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block sidebar-content %}
+    {% include 'partials/sidebar.html' %}
+{% endblock sidebar-content %}
+
+{% block content %}
+<div class="container py-5 position-relative">
+
+    
+    <div class="row justify-content-center">
+        <div class="col-xl-9 col-lg-10">
+            <div class="profile-card">
+                <!-- Top buttons -->
+                <div class="d-flex justify-content-between align-items-center mb-0 mt-0">
+                    <a href="{% url 'customers:customers_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                        ← Back
+                    </a>
+                    <a href="{% url 'customers:customer_edit' customer.customer_id %}" class="btn btn-sm btn-primary px-3">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+                </div>
+                <div class="profile-header">
+                    {% if customer.image %}
+                        <img src="{{ customer.image.url }}" class="avatar" alt="Customer Image">
+                    {% endif %}
+                    <h2>{{ customer.customer_name }}</h2>
+                    {% if customer.company %}
+                        <p class="customer-meta">{{ customer.company }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <p class="info-label">Account Number</p>
+                            <p class="info-value">{{ customer.account_number }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="info-label">Phone</p>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <p class="info-value mb-0">
+                                    {% if customer.customer_phone %}
+                                        {{ customer.country_code }} {{ customer.customer_phone }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </p>
+                                <button type="button" class="btn btn-outline-primary btn-sm ms-3" data-bs-toggle="modal" data-bs-target="#addPhoneModal" title="Add Phone Number">
+                                    📞➕
+                                </button>
+                            </div>
+
+                        </div>
+                        
+                        {% if additional_phones %}
+                            <div class="mb-3">
+                                <p class="info-label">Additional Phones</p>
+                                <ul class="list-unstyled mb-0">
+                                {% for phone in additional_phones %}
+                                    <li class="d-flex align-items-center justify-content-between py-1">
+                                    <span>
+                                        {{ phone.name }}:
+                                        {% if phone.country_code %}{{ phone.country_code.country_code }}{% endif %}
+                                        {{ phone.customer_phone }}
+                                    </span>
+                                    <button type="button" class="btn btn-outline-primary btn-sm ms-3" data-bs-toggle="modal" data-bs-target="#editPhoneModal{{ phone.id }}" title="Edit Phone">
+                                        <i class="fas fa-pen text-primary"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm ms-3" data-bs-toggle="modal" data-bs-target="#deletePhoneModal{{ phone.id }}" title="Delete Phone">
+                                        <i class="fa fa-trash text-danger" aria-hidden="true"></i>
+                                    </button>
+                                    </li>
+                                    {% include 'customers/modals/edit-phone-modal.html' %}
+                                    {% include 'customers/modals/delete-phone-modal.html' %}
+                                {% endfor %}
+                                </ul>
+                            </div>
+                        {% else %}
+                            <div class="mb-3">
+                                <p class="info-label">Additional Phones</p>
+                                <p class="info-value text-muted">None</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <p class="info-label">Email</p>
+                            <p class="info-value">{{ customer.email|default:"N/A" }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="info-label">Website</p>
+                            <p class="info-value">{{ customer.website|default:"N/A" }}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <p class="info-label">Address</p>
+                            <p class="info-value">{{ customer.customer_address|default:"N/A" }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="info-label">Tax Number</p>
+                            <p class="info-value">{{ customer.tax_number|default:"N/A" }}</p>
+                        </div>
+
+                        <div class="highlight-box">
+                            <h6>Total USD</h6>
+                            <div class="amount text-success">{{ customer.total_usd_amount|floatformat:2 }} USD</div>
+                        </div>
+
+                        {% if customer.total_lbp_amount %}
+                        <div class="highlight-box">
+                            <h6>Total LBP</h6>
+                            <div class="amount text-primary">{{ customer.total_lbp_amount|intcomma }} LBP</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if customer.notes %}
+                    <div class="mt-4">
+                        <p class="info-label">Notes</p>
+                        <div class="form-control notes" disabled>{{ customer.notes }}</div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if customer_tasks %}
+            <div class="card mt-5 p-3">
+                <h5 class="mb-3"><i class="fas fa-briefcase me-1"></i> Jobs for {{ customer.customer_name }}</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered align-middle task-table">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Job #</th>
+                                <th>Task Name</th>
+                                <th>Status</th>
+                                <th>Price</th>
+                                <th>Created</th>
+                                <th>Paid</th>
+                                <th class="text-center">View</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in customer_tasks %}
+                            <tr>
+                                <td>{{ task.order_number }}</td>
+                                <td><a href="{% url 'tasks:task_detail' task.pk %}">{{ task.task_name }}</a></td>
+                                <td>{{ task.get_status_display }}</td>
+                                <td>{{ task.final_price }} {{ task.currency }}</td>
+                                <td>{{ task.created_at|naturaltime }}</td>
+                                <td>{{ task.get_paid_status_display }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+                <div class="alert alert-info mt-4 text-center">
+                    No tasks found for this customer.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% include 'customers/modals/add-additional-phone.html' %}
+{% endblock content %}

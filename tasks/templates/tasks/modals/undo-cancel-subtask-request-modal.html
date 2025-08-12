@@ -1,0 +1,21 @@
+{% load crispy_forms_tags %}
+<!-- templates/tasks/modals/send-cancel-subtask-request-modal.html -->
+<div class="modal fade" id="uc{{subtask.id}}" tabindex="-1" aria-labelledby="uc{{subtask.id}}Label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="uc{{subtask.id}}Label">Undo Cancel Request</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{% url 'tasks:undo_cancel_subtask_request_modal' task.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="subtask_id" value="{{ subtask.id }}">
+            <button type="submit" class="btn btn-outline-warning btn-sm">
+                <i class="fas fa-undo"></i> Undo Cancel Request
+            </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
